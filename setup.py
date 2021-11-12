@@ -26,14 +26,20 @@ AUTHOR_EMAIL = 'n.muhlbach@gmail.com'
 
 #
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.0.1'
+VERSION = '0.0.2'
 
 # What packages are required for this module to be executed?
 INSTALL_REQUIRES = [
-    'numpy>=1.19',
-    'pandas>=1.3',
-    'scikit-learn>=1',
+    'numpy',
+    'pandas',
+    'scikit-learn',
 ]
+
+# INSTALL_REQUIRES = [
+#     'numpy>=1.19',
+#     'pandas>=1.3',
+#     'scikit-learn>=1',
+# ]
 
 # What packages are optional?
 EXTRAS_REQUIRE = {
