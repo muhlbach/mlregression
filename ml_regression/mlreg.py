@@ -8,6 +8,12 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import ElasticNet
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, KFold, TimeSeriesSplit
 
+class A():
+    pass
+
+self = A()
+
+self.estimator = RandomForestRegressor()
 
 #------------------------------------------------------------------------------
 # MLRegressor
