@@ -4,16 +4,69 @@
 # Standard
 from sklearn import (dummy,ensemble,gaussian_process,isotonic,kernel_ridge,
                      linear_model,neighbors,neural_network,svm,tree,)
+from itertools import compress
+
+# User
+from .sanity_check import check_estimator
 
 #------------------------------------------------------------------------------
-# Main
+# Model tools
 #------------------------------------------------------------------------------
-# self.estimator
+def compose_model(name, perform_estimator_check=True, verbose=True):
+        
+        # Modules from scikit-learn used for regression
+        SCIKIT_REGRESSION_MODULES = ["dummy","ensemble","gaussian_process",
+                                     "isotonic","kernel_ridge","linear_model",
+                                     "neighbors","neural_network","svm","tree",]
+
+        # Check if 'name' is an attribute of any Scikit-learn module
+        scikit_regression_modules_check = [hasattr(eval(lib), name) for lib in SCIKIT_REGRESSION_MODULES]
+        is_scikit = any(scikit_regression_modules_check)
+        
+        # Compose model
+        if is_scikit:
+            # Locate library
+            scikit_module = list(compress(SCIKIT_REGRESSION_MODULES, scikit_regression_modules_check))[0]
+            if verbose:
+                print(f"Algorithm '{name}' is part of Scikit-learn, namely an attribute of: '{scikit_module}'")
+                            
+            # Instantiate model
+            estimator = eval(scikit_module+"."+name+"()")
+            
+        else:
+            raise NotImplementedError()
+
+        # Model checks
+        if perform_estimator_check:
+            check_estimator(estimator=estimator)
+
+        return estimator
+
+#------------------------------------------------------------------------------
+# Parameter tools
+#------------------------------------------------------------------------------
+def update_params(old_param, new_param, errors="raise"):
+    """ Update 'old_param' with 'new_param'
+    """
+    # Copy old param
+    updated_param = old_param.copy()
+    
+    for k,v in new_param.items():
+        if k in old_param:
+            updated_param[k] = v
+        else:
+            if errors=="raise":
+                raise Exception(f"Parameters {k} not recognized as a default parameter for this estimator")
+            else:
+                pass
+    return updated_param
+
+
 def get_param_grid_from_estimator(estimator):
     """
     Get the corresponding parameter grid from the estimator.
     The default parameter is *ALWAYS* the FIRST parameter listed, *UNLESS* the parameter is followed by a comment, e.g., "Default 100"
-    
+    Read the scikit-learn reference here: https://scikit-learn.org/stable/modules/classes.html# 
     """
     #--------------------------------------------------------------------------
     # from sklearn.dummy
@@ -85,8 +138,14 @@ def get_param_grid_from_estimator(estimator):
     #--------------------------------------------------------------------------
     # from sklearn.linear_model
     #--------------------------------------------------------------------------
-    # elif isinstance(estimator, linear_model.LinearRegression):
-    #     raise NotImplementedError()    
+    elif isinstance(estimator, linear_model.LinearRegression):
+        param_grid = {
+            "fit_intercept":True,
+            "normalize":'deprecated',
+            "copy_X":True,
+            "n_jobs":None,
+            "positive":False
+            }
         
     # elif isinstance(estimator, linear_model.Ridge):
     #     raise NotImplementedError()            
@@ -142,30 +201,23 @@ def get_param_grid_from_estimator(estimator):
     #--------------------------------------------------------------------------
     # from sklearn.tree
     #--------------------------------------------------------------------------
-    
+
+    #--------------------------------------------------------------------------
+    # Other
+    #--------------------------------------------------------------------------
     else:
         try:
             param_grid = estimator.get_params()
         except:        
             raise NotImplementedError(f"Algorithm '{estimator}' is currently not implemented and has no 'get_params()'-method")
             
-    
     return param_grid
 
   
 
     # # Lasso
     # lambda_max = (X.T @ y.values).abs().max()/X.shape[0]
-    
-    #     "LinearRegression" : {
-    #         "model_params" : {
-    #             "fit_intercept":True,
-    #             "normalize":False,
-    #             "copy_X":True,
-    #             "n_jobs":None,
-    #             "positive":False},
-    #         "tuning_params" : {}
-    #     },        
+     
     #     "Lasso" : {
     #         "model_params" : {
     #             "fit_intercept":True,

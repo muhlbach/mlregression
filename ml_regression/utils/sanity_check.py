@@ -3,17 +3,21 @@
 #------------------------------------------------------------------------------
 import pandas as pd
 import numpy as np
+from sklearn.base import is_regressor
 from collections.abc import Sequence
 #------------------------------------------------------------------------------
 # Main
 #------------------------------------------------------------------------------
 def check_estimator(estimator):
-    """Check whether model instance is useful for estimating propensity scores"""
-    # Methods required
-    required_methods = ["fit", "predict","get_params", "set_params"]
+    """Check estimator"""    
+    if not is_regressor(estimator):
+        raise Exception(f"Estimator '{type(estimator).__name__}' did not pass an a regressor")
+    
+    # Required methods of an regression model
+    REQUIRED_METHODS = ["get_params", "set_params", "fit", "predict", "score"]
 
     # Check if class has required methods by using getattr() to get the attribute, and callable() to verify it is a method
-    for method in required_methods:
+    for method in REQUIRED_METHODS:
         method_attribute = getattr(estimator, method, None)
         if not callable(method_attribute):
             raise Exception(f"Estimator '{type(estimator).__name__}' does not contain the method '{method}'")

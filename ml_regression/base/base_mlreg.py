@@ -7,9 +7,10 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, KFold, TimeSeriesSplit
 
+
 # User
-from ..utils.tools import SingleSplit, get_param_grid_from_estimator
-from ..utils.params import get_param_grid_from_estimator
+from ..utils.tools import SingleSplit
+from ..utils.model_params import get_param_grid_from_estimator, compose_model
 from ..utils.sanity_check import check_param_grid, check_X_Y, check_X, check_estimator
 from ..utils.exceptions import WrongInputException
 
@@ -22,7 +23,7 @@ class BaseMLRegressor(object):
     """
     # -------------------------------------------------------------------------
     # Constructor function
-    # -------------------------------------------------------------------------
+    # -------------------------------------------------------------------------    
     def __init__(self,
                  estimator,
                  param_grid=None,
@@ -55,8 +56,7 @@ class BaseMLRegressor(object):
         # ---------------------------------------------------------------------
         # Check estimator type
         if isinstance(self.estimator, str):
-            # self.estimator = self._instantiate_estimator_from_string(name=self.estimator)
-            raise NotImplementedError("Provided 'estimator' cannot be a string at this point, my apologies...")
+            self.estimator = compose_model(name=self.estimator)
         else:
             check_estimator(self.estimator)
             
@@ -84,10 +84,11 @@ class BaseMLRegressor(object):
             
         # Define cross-validated estimator
         self.estimator_cv = self._choose_estimator(estimator=self.estimator,
+                                                   param_grid=self.param_grid,
+                                                   cv_params=self.cv_params,                                                   
                                                    splitter=self.splitter,
                                                    n_models=self.n_models,
-                                                   max_n_models=self.max_n_models,
-                                                   param_grid=self.param_grid)
+                                                   max_n_models=self.max_n_models)
 
     # --------------------
     # Class variables
@@ -98,22 +99,6 @@ class BaseMLRegressor(object):
     # --------------------
     # Private functions
     # --------------------
-    def _update_params(self, old_param, new_param, errors="raise"):
-        """ Update 'old_param' with 'new_param'
-        """
-        # Copy old param
-        updated_param = old_param.copy()
-        
-        for k,v in new_param.items():
-            if k in old_param:
-                updated_param[k] = v
-            else:
-                if errors=="raise":
-                    raise Exception(f"Parameters {k} not recognized as a default parameter for this estimator")
-                else:
-                    pass
-        return updated_param
-
     def _choose_splitter(self, n_folds=2, fold_type="KFold", test_size=0.25):
         """ Define the split function that splits the data for cross-validation"""
         if n_folds==1:
@@ -141,18 +126,20 @@ class BaseMLRegressor(object):
         
         return splitter
         
-    def _choose_estimator(self, estimator, splitter, n_models, max_n_models, param_grid):
+    def _choose_estimator(self, estimator, param_grid, cv_params, splitter, n_models, max_n_models):
         """ Choose between grid search or randomized search, or simply the estimator if only one parametrization is provided """
-        if n_models>1:
+        if n_models>1:            
             if n_models>max_n_models:
                 estimator_cv = RandomizedSearchCV(estimator=estimator,
                                                   param_distributions=param_grid,
                                                   cv=splitter,
-                                                  n_iter=max_n_models)
+                                                  n_iter=max_n_models,
+                                                  **cv_params)
             else:
                 estimator_cv = GridSearchCV(estimator=estimator,
                                             param_grid=param_grid,
-                                            cv=splitter)
+                                            cv=splitter,
+                                            **cv_params)
         
         else:
             # If param_grid leads to one single model (n_models==1), there's no need to set of cross validation. In this case, just initialize the model and set parameters

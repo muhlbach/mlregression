@@ -10,6 +10,18 @@ from sklearn.utils.validation import _num_samples
 #------------------------------------------------------------------------------
 # Main
 #------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# Misc
+#------------------------------------------------------------------------------
+def break_links(x):
+    """ Break link to x by copying it"""
+    x = x.copy()
+    return x
+
+#------------------------------------------------------------------------------
+# Save and load models
+#------------------------------------------------------------------------------
 # Save and load objects using pickle
 def save_object_by_pickle(path,obj):
     with open(path, 'wb') as f:
@@ -19,30 +31,12 @@ def load_object_by_pickle(path):
     with open(path, 'rb') as f:
         return pickle.load(f)
 
-def break_links(x):
-    """ Break link to x by copying it"""
-    x = x.copy()
-    return x
-
-def update_parameters(self, default_params, user_params, element_as_list=True):
-    """ Merge default and supplied parameters """
-    if bool(user_params):
-        for k,v in user_params.items():
-            
-            # If key is in param_default, then update value
-            if k in default_params:
-                default_params[k] = v
-            else:
-                raise Exception(f"Parameter '{k}' is invalid because it is not part of default parameters")
-            
-    if element_as_list:
-        # Turn every element into a list    
-        default_params = {key:(value if isinstance(value, list) else [value]) for key,value in default_params.items()}
-            
-    return default_params    
 
 
 class SingleSplit(object):
+    """
+    Split dataset in two fold (single split), similar to train-test split
+    """
     # --------------------
     # Constructor function
     # --------------------
