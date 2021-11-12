@@ -14,7 +14,7 @@ from setuptools import find_packages, setup, Command
 
 ## Package meta-data.
 # Package
-NAME = 'ml_regression'
+NAME = 'ml_regression_tester2'
 DESCRIPTION = 'Machine learning regression off-the-shelf'
 URL = f'https://github.com/muhlbach/{NAME}'
 LONG_DESC_TYPE = "text/markdown"

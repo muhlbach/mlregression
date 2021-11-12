@@ -5,7 +5,9 @@
 import numpy as np
 import pandas as pd
 
-from ..base.base_mlreg import BaseMLRegressor
+import ml_regression
+
+from ml_regression.base.base_mlreg import BaseMLRegressor
 
 
 
