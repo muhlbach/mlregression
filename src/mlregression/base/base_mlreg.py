@@ -170,7 +170,10 @@ class BaseMLRegressor(object):
         self.estimator_cv.fit(X=X,y=y,sample_weight=sample_weight)
         
         # Mean cross-validated score of the best_estimator
-        self.best_mean_cv_score_ = self.estimator_cv.best_score_
+        if hasattr(self.estimator_cv, "best_score_"):     
+            self.best_mean_cv_score_ = self.estimator_cv.best_score_
+        else:
+            self.best_mean_cv_score_ = None
                 
         return self
 
