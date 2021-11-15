@@ -56,7 +56,7 @@ class BaseMLRegressor(object):
         # ---------------------------------------------------------------------
         # Check estimator type
         if isinstance(self.estimator, str):
-            self.estimator = compose_model(name=self.estimator)
+            self.estimator = compose_model(name=self.estimator,perform_estimator_check=True, verbose=self.verbose)
         else:
             check_estimator(self.estimator)
             
@@ -90,15 +90,22 @@ class BaseMLRegressor(object):
                                                    n_models=self.n_models,
                                                    max_n_models=self.max_n_models)
 
-    # --------------------
+    # -------------------------------------------------------------------------
     # Class variables
-    # --------------------
+    # -------------------------------------------------------------------------
     FOLD_TYPE_ALLOWED = ["KFold", "TimeSeriesSplit"]
     N_FOLDS_ALLOWED = [1, 2, "...", "N"]
 
-    # --------------------
+    # -------------------------------------------------------------------------
+    # Very Private functions
+    # -------------------------------------------------------------------------
+    def __getattr__(self, attrname):
+        if not attrname in self.__dict__:
+            return getattr(self.estimator_cv, attrname)
+
+    # -------------------------------------------------------------------------
     # Private functions
-    # --------------------
+    # -------------------------------------------------------------------------
     def _choose_splitter(self, n_folds=2, fold_type="KFold", test_size=0.25):
         """ Define the split function that splits the data for cross-validation"""
         if n_folds==1:
@@ -151,22 +158,25 @@ class BaseMLRegressor(object):
             
         return estimator_cv
         
-    # --------------------
+    # -------------------------------------------------------------------------
     # Public functions
-    # --------------------
-    def fit(self,X,y):
+    # -------------------------------------------------------------------------
+    def fit(self,X,y,sample_weight=None):
         
         # Check X and Y
         X, y = check_X_Y(X, y)
                         
         # Estimate f in Y0 = f(X) + eps
-        self.estimator_cv.fit(X=X,y=y)
+        self.estimator_cv.fit(X=X,y=y,sample_weight=sample_weight)
         
         # Mean cross-validated score of the best_estimator
         self.best_mean_cv_score_ = self.estimator_cv.best_score_
                 
         return self
-        
+
+    def get_params(self,deep=True):            
+        return self.estimator_cv.get_params(deep=deep)
+
     def predict(self,X):
         
         # Check X and Y
@@ -177,7 +187,18 @@ class BaseMLRegressor(object):
                         
         return y_hat
         
-    
+    def score(self,X,y,sample_weight=None):
+        
+        # Check X and Y
+        X, y = check_X_Y(X, y)
+                        
+        score = self.estimator_cv.score(X=X,y=y,sample_weight=sample_weight)
+                
+        return score
+
+    def set_params(self,**params):
+        self.estimator_cv.set_params(**params)
+
     
     
     
