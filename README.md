@@ -1,9 +1,18 @@
 
 # Machine learning regression (mlregression)
 
-Machine Learning Regression (mlregrresion) is an off-the-shelf implementation fitting and tuning the most popular ML methods (provided by scikit-learn)
+Machine Learning Regression (mlregrresion) is an off-the-shelf implementation fitting and tuning the most popular ML methods (provided by scikit-learn).
 
-Additionally, please contact the authors below if you find any bugs or have any suggestions for improvement. Thank you!
+Currently, the __fully__ implemented models include:
+- Ensemble trees (Random forests, XGBoost, LightGBM, GradientBoostingRegressor, ExtraTreesRegressor)
+- Penalized regression (Ridge, Lasso, ElasticNet, Lars, LassoLars) 
+- Neural nets (Simple neural nets with 1-5 hidden layers, rely activation, and early stopping)
+
+_NB!_ When using penalized regressions, consider using the native CV-implementation from scikit-learn for speed. See Example 6 below.
+
+In addition, all scikit-learn learners can be supplied (e.g., HuberRegressor or BayesianRidge), but then one has to provide a parameter grid as well!
+
+Please contact the authors below if you find any bugs or have any suggestions for improvement. Thank you!
 
 Author: Nicolaj Søndergaard Mühlbach (n.muhlbach at gmail dot com, muhlbach at mit dot edu) 
 
@@ -48,7 +57,7 @@ X, y = make_regression(n_samples=500,
 X_train, X_test, y_train, y_test = train_test_split(X, y)
 
 #------------------------------------------------------------------------------
-# Main use of MLRegressor
+# Example 1: Main use of MLRegressor
 #------------------------------------------------------------------------------
 # Instantiate model and specify the underlying regressor by a string
 mlreg = MLRegressor(estimator="RandomForestRegressor",
@@ -68,7 +77,7 @@ mlreg.best_estimator_
 mlreg.score(X=X_test,y=y_test)
 
 #------------------------------------------------------------------------------
-# RF
+# Example 2: RF
 #------------------------------------------------------------------------------
 # Instantiate model
 rf = RF(max_n_models=2)
@@ -80,7 +89,7 @@ rf.fit(X=X_train, y=y_train)
 rf.score(X=X_test, y=y_test)
 
 #------------------------------------------------------------------------------
-# XGBoost
+# Example 3: XGBoost
 #------------------------------------------------------------------------------
 # Instantiate model
 xgb = MLRegressor(estimator=XGBRegressor(),
@@ -93,7 +102,7 @@ xgb.fit(X=X_train, y=y_train)
 xgb.score(X=X_test, y=y_test)
 
 #------------------------------------------------------------------------------
-# LightGBM
+# Example 4: LightGBM
 #------------------------------------------------------------------------------
 # Instantiate model
 lgbm = MLRegressor(estimator=LGBMegressor(),
@@ -104,6 +113,31 @@ lgbm.fit(X=X_train, y=y_train)
 
 # Predict and score
 lgbm.score(X=X_test, y=y_test)
+
+#------------------------------------------------------------------------------
+# Example 5: Neural Nets
+#------------------------------------------------------------------------------
+# Instantiate model
+nn = MLRegressor(estimator="MLPRegressor",
+                  max_n_models=2)
+
+# Fit
+nn.fit(X=X_train, y=y_train)
+
+# Predict and score
+nn.score(X=X_test, y=y_test)
+
+#------------------------------------------------------------------------------
+# Example 6: LassoCV/RidgeCV/ElasticNetCV/LarsCV/LassoLarsCV (native scikit-learn implementation)
+#------------------------------------------------------------------------------
+# Instantiate model
+penalized = MLRegressor(estimator="LassoCV")
+
+# Fit
+penalized.fit(X=X_train, y=y_train)
+
+# Predict and score
+penalized.score(X=X_test, y=y_test)
 ```
 
 <!-- ## Example

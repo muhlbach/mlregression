@@ -231,25 +231,130 @@ def get_param_grid_from_estimator(estimator):
             "n_jobs":None,
             "positive":False
             }
+                
+    elif isinstance(estimator, linear_model.Ridge):
+        param_grid = {
+            'alpha':[1.0,0.001, 0.1, 10, 100, 1000, 10000], 
+            'fit_intercept':True,
+            'copy_X':True,
+            'max_iter':None,
+            'tol':0.001,
+            'solver':'auto',
+            'positive':False,
+            'random_state':None
+            }
         
-    # elif isinstance(estimator, linear_model.Ridge):
-    #     raise NotImplementedError()            
-
+    elif isinstance(estimator, linear_model.RidgeCV):
+        param_grid = {
+            'alphas':(1.0,0.001, 0.1, 10, 100, 1000, 10000),
+            'fit_intercept':True,
+            'scoring':None,
+            'gcv_mode':None,
+            'store_cv_values':False,
+            'alpha_per_target':False
+            }
+        
     # elif isinstance(estimator, linear_model.SGDRegressor):
     #     raise NotImplementedError()    
         
-    # elif isinstance(estimator, linear_model.ElasticNet):
-    #     raise NotImplementedError()    
+    elif isinstance(estimator, linear_model.ElasticNet):
+        param_grid = {
+            'alpha':np.exp(np.linspace(start=np.log(100), stop=np.log(100*0.000001), num=1000)),
+            'l1_ratio':[0.5,1/4,3/4,1],
+            'fit_intercept':True,
+            'precompute':False,
+            'max_iter':1000,
+            'tol':0.0001,
+            'warm_start':False,
+            'positive':False,
+            'selection':'cyclic'
+            }
 
-    # elif isinstance(estimator, linear_model.Lars):
-    #     raise NotImplementedError()    
+    elif isinstance(estimator, linear_model.ElasticNetCV):
+        param_grid = {
+            'l1_ratio':[0.5,1/4,3/4,1],
+            'eps':0.001,
+            'n_alphas':1000,
+            'fit_intercept':True,
+            'precompute':'auto',
+            'max_iter':1000,
+            'tol':0.0001,
+            'copy_X':True,
+            'positive':False,
+            'selection':'cyclic'
+            }
 
-    # elif isinstance(estimator, linear_model.Lasso):
-    #     raise NotImplementedError()    
+    elif isinstance(estimator, linear_model.Lars):
+        param_grid = {
+            'fit_intercept':True,
+            'precompute':'auto',
+            'n_nonzero_coefs':[500,100,200,300,400,np.inf],
+            'eps':2.220446049250313e-16,
+            'copy_X':True,
+            'fit_path':True,
+            'jitter':None,
+            }
 
-    # elif isinstance(estimator, linear_model.LassoLars):
-    #     raise NotImplementedError()    
+    elif isinstance(estimator, linear_model.LarsCV):
+        param_grid = {
+            'fit_intercept':True,
+            'max_iter':500,
+            'precompute':'auto',
+            'max_n_alphas':1000,
+            'eps':2.220446049250313e-16,
+            'copy_X':True
+            }
+        
+    elif isinstance(estimator, linear_model.Lasso):
+        param_grid = {
+            'alpha':np.exp(np.linspace(start=np.log(100), stop=np.log(100*0.000001), num=1000)),
+            'fit_intercept':True,
+            'precompute':False,
+            'copy_X':True,
+            'max_iter':1000,
+            'tol':0.0001,
+            'warm_start':False,
+            'positive':False,
+            'selection':'cyclic'
+            }
 
+    elif isinstance(estimator, linear_model.LassoCV):
+        param_grid = {
+            'eps':0.001,
+            'n_alphas':1000,
+            'fit_intercept':True,
+            'precompute':'auto',
+            'max_iter':1000,
+            'tol':0.0001,
+            'copy_X':True,
+            'positive':False,
+            'selection':'cyclic'
+            }
+
+    elif isinstance(estimator, linear_model.LassoLars):
+        param_grid = {
+            'alpha':np.exp(np.linspace(start=np.log(100), stop=np.log(100*0.000001), num=1000)),
+            'fit_intercept':True,
+            'precompute':'auto',
+            'max_iter':500,
+            'eps':2.220446049250313e-16,
+            'copy_X':True,
+            'fit_path':True,
+            'positive':False,
+            'jitter':None,
+            }
+
+    elif isinstance(estimator, linear_model.LassoLarsCV):
+        param_grid = {
+            'fit_intercept':True,
+            'max_iter':500,
+            'precompute':'auto',
+            'max_n_alphas':1000,
+            'eps':2.220446049250313e-16,
+            'copy_X':True,
+            'positive':False
+            }
+        
     # elif isinstance(estimator, linear_model.OrthogonalMatchingPursuit):
     #     raise NotImplementedError()            
         
@@ -287,7 +392,7 @@ def get_param_grid_from_estimator(estimator):
                                           (32,)],
             'activation':'relu',
             'solver':'adam',
-            'alpha':[0.0001,[1.e+01, 1.e+02, 1.e+03, 1.e+05, 1.e+06]],
+            'alpha':[0.0001,1.e+01, 1.e+02, 1.e+03, 1.e+05, 1.e+06],
             'batch_size':'auto',
             'learning_rate':['constant', 'invscaling', 'adaptive'],
             'learning_rate_init':0.001,
@@ -326,60 +431,6 @@ def get_param_grid_from_estimator(estimator):
     return param_grid
 
   
-
-    # # Lasso
-    # lambda_max = (X.T @ y.values).abs().max()/X.shape[0]
-     
-    #     "Lasso" : {
-    #         "model_params" : {
-    #             "fit_intercept":True,
-    #             "normalize":False,
-    #             "precompute":False,
-    #             "copy_X":True,
-    #             "max_iter":100000,
-    #             "tol":0.0001,
-    #             "warm_start":False,
-    #             "positive":False,
-    #             "random_state":None,
-    #             "selection":'cyclic'
-    #             },
-    #         "tuning_params" : {
-    #             "alpha": np.exp(np.linspace(start=np.log(lambda_max), stop=np.log(lambda_max*0.000001), num=1000))
-    #             }
-    #     },
-    #     "Ridge" : {
-    #         "model_params" : {
-    #             "fit_intercept":True,
-    #             "normalize":False,
-    #             "copy_X":True,
-    #             "max_iter":None,
-    #             "tol":0.0001,
-    #             "solver":'auto',
-    #             "random_state":None,
-    #             },
-    #         "tuning_params" : {
-    #             "alpha": [0.001, 0.1, 1, 10, 100, 1000, 10000]
-    #             }
-    #     },
-    #     "ElasticNet" : {
-    #         "model_params" : {
-    #             "fit_intercept":True,
-    #             "normalize":False,
-    #             "precompute":False,
-    #             "max_iter":100000,
-    #             "copy_X":True,
-    #             "tol":0.0001,
-    #             "warm_start":False,
-    #             "positive":False,
-    #             "random_state":None,
-    #             "selection":'cyclic'
-    #             },
-    #         "tuning_params" : {
-    #             "alpha": np.exp(np.linspace(start=np.log(lambda_max), stop=np.log(lambda_max*0.000001), num=1000)),
-    #             "l1_ratio": [1/4, 1/2, 3/4, 1]
-    #             }
-    #     },
-
     #     },
     #     "SGDRegressor" : {
     #         "model_params" : {

@@ -10,7 +10,7 @@ from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, KFold, Tim
 
 # User
 from ..utils.tools import SingleSplit
-from ..utils.model_params import get_param_grid_from_estimator, compose_model
+from ..utils.model_params import get_param_grid_from_estimator, compose_model, update_params
 from ..utils.sanity_check import check_param_grid, check_X_Y, check_X, check_estimator
 from ..utils.exceptions import WrongInputException
 
@@ -67,6 +67,10 @@ class BaseMLRegressor(object):
         if self.param_grid is None:
             self.param_grid = get_param_grid_from_estimator(estimator=self.estimator)
             
+        # Add default parameters if for some reason not specified    
+        self.param_grid = update_params(old_param=self.estimator.get_params(),
+                                        new_param=self.param_grid)
+        
         # Set param_grid values to list if not already list
         self.param_grid = {k: list(set(v)) if isinstance(v, list) else v.tolist() if isinstance(v, np.ndarray) else [v] for k, v in self.param_grid.items()}
 
@@ -134,40 +138,61 @@ class BaseMLRegressor(object):
         return splitter
         
     def _choose_estimator(self, estimator, param_grid, cv_params, splitter, n_models, max_n_models):
-        """ Choose between grid search or randomized search, or simply the estimator if only one parametrization is provided """
-        if n_models>1:            
-            if n_models>max_n_models:
-                estimator_cv = RandomizedSearchCV(estimator=estimator,
-                                                  param_distributions=param_grid,
-                                                  cv=splitter,
-                                                  n_iter=max_n_models,
-                                                  **cv_params)
-            else:
-                estimator_cv = GridSearchCV(estimator=estimator,
-                                            param_grid=param_grid,
-                                            cv=splitter,
-                                            **cv_params)
-        
-        else:
-            # If param_grid leads to one single model (n_models==1), there's no need to set of cross validation. In this case, just initialize the model and set parameters
-            estimator_cv = estimator
+        """
+        Choose between grid search or randomized search, or simply the estimator if only one parametrization is provided.
+        Note that if the estimator ends with "CV", we assume it has a native implementation as in scikit-learn. We use that in this case.
+        """
+        # 
+        if type(estimator).__name__[-2:]=="CV":
+            # Get first element of parameter grid
             param_grid = {k: param_grid.get(k,None)[0] for k in param_grid.keys()}
+            # Set estimator
+            estimator_cv = estimator
+            
+            # Update params
+            param_grid = update_params(old_param=param_grid,
+                                       new_param={
+                                           "cv":splitter
+                                           }
+                                       )
             
             # Set parameters
-            estimator_cv.set_params(**param_grid)        
+            estimator_cv.set_params(**param_grid)
+            
+        else:
+            if n_models>1:            
+                if n_models>max_n_models:
+                    estimator_cv = RandomizedSearchCV(estimator=estimator,
+                                                      param_distributions=param_grid,
+                                                      cv=splitter,
+                                                      n_iter=max_n_models,
+                                                      **cv_params)
+                else:
+                    estimator_cv = GridSearchCV(estimator=estimator,
+                                                param_grid=param_grid,
+                                                cv=splitter,
+                                                **cv_params)
+            
+            else:
+                # If param_grid leads to one single model (n_models==1), there's no need to set of cross validation. In this case, just initialize the model and set parameters
+                estimator_cv = estimator
+                param_grid = {k: param_grid.get(k,None)[0] for k in param_grid.keys()}
+                
+                # Set parameters
+                estimator_cv.set_params(**param_grid)        
             
         return estimator_cv
         
     # -------------------------------------------------------------------------
     # Public functions
     # -------------------------------------------------------------------------
-    def fit(self,X,y,sample_weight=None):
+    def fit(self,X,y):
         
         # Check X and Y
         X, y = check_X_Y(X, y)
                         
         # Estimate f in Y0 = f(X) + eps
-        self.estimator_cv.fit(X=X,y=y,sample_weight=sample_weight)
+        self.estimator_cv.fit(X=X,y=y)
         
         # Mean cross-validated score of the best_estimator
         if hasattr(self.estimator_cv, "best_score_"):     

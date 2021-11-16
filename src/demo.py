@@ -92,6 +92,37 @@ lgbm.fit(X=X_train, y=y_train)
 lgbm.score(X=X_test, y=y_test)
 
 
+#------------------------------------------------------------------------------
+# NeuralNets
+#------------------------------------------------------------------------------
+# Instantiate model
+nn = MLRegressor(estimator="MLPRegressor",
+                  max_n_models=2)
+
+# Fit
+nn.fit(X=X_train, y=y_train)
+
+# Predict and score
+nn.score(X=X_test, y=y_test)
+
+#------------------------------------------------------------------------------
+# LassoCV/RidgeCV/ElasticNetCV/LarsCV/LassoLarsCV (native scikit-learn implementation)
+#------------------------------------------------------------------------------
+# Instantiate model
+penalized = MLRegressor(estimator="LassoCV")
+
+# Fit
+penalized.fit(X=X_train, y=y_train)
+
+# Predict and score
+penalized.score(X=X_test, y=y_test)
+
+#------------------------------------------------------------------------------
+# Tests
+#------------------------------------------------------------------------------
+from sklearn.linear_model import RidgeCV
+estimator = RidgeCV()
+
 
 
 
