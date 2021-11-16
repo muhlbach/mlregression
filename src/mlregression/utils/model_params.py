@@ -102,7 +102,7 @@ def get_param_grid_from_estimator(estimator):
     elif isinstance(estimator, boosting.LGBMegressor):
         param_grid = {
             "boosting_type":'gbdt',
-            "num_leaves":[31, 21, 41],
+            "num_leaves":[31,11,21,41],
             "max_depth":[-1,2,4,8,16],
             "learning_rate":[0.1,0.8, 0.5, 0.3, 0.01],
             "n_estimators":[100,200,500],
@@ -139,12 +139,45 @@ def get_param_grid_from_estimator(estimator):
     # elif isinstance(estimator, ensemble.BaggingRegressor):
     #     raise NotImplementedError()
         
-    # elif isinstance(estimator, ensemble.ExtraTreesRegressor):
-    #     raise NotImplementedError()        
+    elif isinstance(estimator, ensemble.ExtraTreesRegressor):
+        param_grid = {
+            "n_estimators":500,                                                # Default 100 
+            'criterion':'squared_error',
+            'max_depth':[None,2,4,8,16],
+            'min_samples_split':[2,4,8,16],
+            'min_samples_leaf':[1,2,4,8],
+            'min_weight_fraction_leaf':0.0,
+            'max_features':['sqrt',1/4,1/3,1/2,2/3,'log2','auto'],             # Default 'auto'
+            'max_leaf_nodes':None,
+            'min_impurity_decrease':0.0,
+            'bootstrap':False,
+            'oob_score':False,
+            'ccp_alpha':0.0,
+            'max_samples':None
+            }   
 
-    # elif isinstance(estimator, ensemble.GradientBoostingRegressor):
-    #     raise NotImplementedError()
-
+    elif isinstance(estimator, ensemble.GradientBoostingRegressor):
+        param_grid = {
+            "loss":'squared_error',
+            'learning_rate':[0.1,0.8, 0.5, 0.3, 0.01],
+            'n_estimators':[100,200,500],
+            'subsample':[1.0,0.8,0.5],
+            'criterion':'friedman_mse',
+            'min_samples_split':[2,4,8,16],
+            'min_samples_leaf':[1,2,4,8],
+            'min_weight_fraction_leaf':0.0,
+            'max_depth':[3,2,4,8,16],
+            'min_impurity_decrease':0.0,
+            'max_features':['sqrt',1/4,1/3,1/2,2/3,'log2',None],               # Default None
+            'alpha':0.9,
+            'verbose':0,
+            'max_leaf_nodes':None,
+            'validation_fraction':0.1,
+            'n_iter_no_change':None,
+            'tol':0.0001,
+            'ccp_alpha':0.0
+            }
+        
     elif isinstance(estimator, ensemble.RandomForestRegressor):
         param_grid = {
             "n_estimators":500,                                                # Default 100 
@@ -153,7 +186,7 @@ def get_param_grid_from_estimator(estimator):
             "min_samples_split":[2,4,8,16],
             "min_samples_leaf":[1,2,4,8],
             "min_weight_fraction_leaf":0.0,
-            "max_features":['sqrt',1/4,1/3,1/2,2/3,'log2','auto'],             # Default 100
+            "max_features":['sqrt',1/4,1/3,1/2,2/3,'log2','auto'],             # Default 'auto'
             "max_leaf_nodes":None,
             "min_impurity_decrease":0.0,
             "bootstrap":True,
@@ -166,8 +199,8 @@ def get_param_grid_from_estimator(estimator):
             "max_samples":None
             }
 
-    elif isinstance(estimator, ensemble.HistGradientBoostingRegressor):
-        raise NotImplementedError()    
+    # elif isinstance(estimator, ensemble.HistGradientBoostingRegressor):
+    #     raise NotImplementedError()    
 
     #--------------------------------------------------------------------------
     # from sklearn.gaussian_process
@@ -245,7 +278,34 @@ def get_param_grid_from_estimator(estimator):
     #--------------------------------------------------------------------------
     # from sklearn.neural_network
     #--------------------------------------------------------------------------
-    
+    elif isinstance(estimator, neural_network.MLPRegressor):
+        param_grid = {
+            'hidden_layer_sizes':[(100,), (2,), (2,4), (2,4,8,), (2,4,8,16,), (2,4,8,16,32),
+                                          (4,), (4,8), (4,8,16), (4,8,16,32),
+                                          (8,), (8,16), (8,16,32),
+                                          (16,), (16,32),
+                                          (32,)],
+            'activation':'relu',
+            'solver':'adam',
+            'alpha':[0.0001,[1.e+01, 1.e+02, 1.e+03, 1.e+05, 1.e+06]],
+            'batch_size':'auto',
+            'learning_rate':['constant', 'invscaling', 'adaptive'],
+            'learning_rate_init':0.001,
+            'power_t':0.5,
+            'max_iter':200,
+            'shuffle':True,
+            'tol':0.0001,
+            'momentum':0.9,
+            'nesterovs_momentum':True,
+            'early_stopping':True,
+            'validation_fraction':0.1,
+            'beta_1':0.9,
+            'beta_2':0.999,
+            'epsilon':1e-08,
+            'n_iter_no_change':10,
+            'max_fun':15000
+            }
+        
     #--------------------------------------------------------------------------
     # from sklearn.svm
     #--------------------------------------------------------------------------
@@ -320,30 +380,6 @@ def get_param_grid_from_estimator(estimator):
     #             }
     #     },
 
-    #     },
-    #     "ExtraTreesRegressor" : {
-    #         "model_params" : {
-    #             "criterion":'mse',
-    #             "min_weight_fraction_leaf":0.0,
-    #             'min_impurity_decrease':0.0,
-    #             'min_impurity_split':None,
-    #             'bootstrap': True,
-    #             'oob_score':False,
-    #             'n_jobs':None,
-    #             'random_state':None,
-    #             'verbose':0,
-    #             'warm_start':False,
-    #             'ccp_alpha':0.0,
-    #             'max_samples':None
-    #             },
-    #         "tuning_params" : {
-    #             'n_estimators': 500,
-    #             'min_samples_split': [2,4,8,16],
-    #             'min_samples_leaf': [1,2,4,8],
-    #             'max_features': [1/4,1/3,1/2,2/3, 'sqrt','log2'],
-    #             'max_leaf_nodes': None,
-    #             'max_depth': [4,8,16,None]
-    #             }
     #     },
     #     "SGDRegressor" : {
     #         "model_params" : {
@@ -484,39 +520,7 @@ def get_param_grid_from_estimator(estimator):
     #             "n_neighbors":[5,1,2,4,8,16,32],
     #             "weights":['distance','uniform'],
     #             }
-    #     },
-    #     "MLPRegressor" : {
-    #         "model_params" : {
-    #             "solver":'adam',
-    #             "batch_size":'auto',
-    #             "learning_rate_init":0.001,
-    #             "power_t":0.5,
-    #             "max_iter":10000,
-    #             "shuffle":True,
-    #             "random_state":None,
-    #             "tol":0.0001,
-    #             "verbose":False,
-    #             "warm_start":False,
-    #             "momentum":0.9,
-    #             "nesterovs_momentum":True,
-    #             "early_stopping":True,
-    #             "validation_fraction":0.1,
-    #             "beta_1":0.9,
-    #             "beta_2":0.999,
-    #             "epsilon":1e-08,
-    #             "n_iter_no_change":50,
-    #             "max_fun":15000
-    #             },
-    #         "tuning_params" : {
-    #             "hidden_layer_sizes":[(2,), (2,4), (2,4,8,), (2,4,8,16,), (2,4,8,16,32),
-    #                                   (4,), (4,8), (4,8,16), (4,8,16,32),
-    #                                   (8,), (8,16), (8,16,32),
-    #                                   (16,), (16,32),
-    #                                   (32,)],
-    #             "activation":['relu'],
-    #             "alpha":[1.e+01, 1.e+02, 1.e+03, 1.e+04, 1.e+05, 1.e+06],
-    #             "learning_rate":['constant', 'adaptive'],
-    #             }
+    #
     #     },
     #     "LinearSVR" : {
     #         "model_params" : {
