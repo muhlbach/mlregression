@@ -10,8 +10,6 @@
 #------------------------------------------------------------------------------
 # Libraries
 #------------------------------------------------------------------------------
-%reset -f
-
 # Standard
 from sklearn.datasets import make_regression
 from sklearn.model_selection import train_test_split
@@ -19,7 +17,7 @@ from sklearn.model_selection import train_test_split
 # This library
 from mlregression.mlreg import MLRegressor
 from mlregression.mlreg import RF
-from mlregression.estimator.boosting import XGBRegressor
+from mlregression.estimator.boosting import XGBRegressor, LGBMegressor
 
 #------------------------------------------------------------------------------
 # Data
@@ -38,7 +36,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y)
 #------------------------------------------------------------------------------
 # Main use of MLRegressor
 #------------------------------------------------------------------------------
-# Instantiate model
+# Instantiate model and specify the underlying regressor by a string
 mlreg = MLRegressor(estimator="RandomForestRegressor",
                     max_n_models=2)
 
@@ -52,7 +50,7 @@ y_hat = mlreg.predict(X=X_test)
 mlreg.best_score_
 mlreg.best_estimator_
 
-# Check the score
+# Compute the score
 mlreg.score(X=X_test,y=y_test)
 
 #------------------------------------------------------------------------------
@@ -65,7 +63,7 @@ rf = RF(max_n_models=2)
 rf.fit(X=X_train, y=y_train)
 
 # Predict and score
-rf.score(X=X_test,y=y_test)
+rf.score(X=X_test, y=y_test)
 
 #------------------------------------------------------------------------------
 # XGBoost
@@ -74,27 +72,24 @@ rf.score(X=X_test,y=y_test)
 xgb = MLRegressor(estimator=XGBRegressor(),
                   max_n_models=2)
 
-xgb.get_params()
-
 # Fit
 xgb.fit(X=X_train, y=y_train)
 
 # Predict and score
-xgb.score(X=X_test,y=y_test)
-
+xgb.score(X=X_test, y=y_test)
 
 #------------------------------------------------------------------------------
-# Tests
+# LightGBM
 #------------------------------------------------------------------------------
-xgb.get_params()
+# Instantiate model
+lgbm = MLRegressor(estimator=LGBMegressor(),
+                  max_n_models=2)
 
-xgb.param_grid
+# Fit
+lgbm.fit(X=X_train, y=y_train)
 
-from mlregression.estimator import boosting
-estimator=XGBRegressor()
-
-estimator.get_params()
-rf.get_params()
+# Predict and score
+lgbm.score(X=X_test, y=y_test)
 
 
 

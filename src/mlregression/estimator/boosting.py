@@ -4,6 +4,7 @@
 # Standard
 import numpy as np
 import xgboost as xgb
+import lightgbm as lgbm
 
 #------------------------------------------------------------------------------
 # XGBoost
@@ -24,7 +25,7 @@ class XGBRegressor(xgb.XGBRegressor):
                   objective='reg:squarederror',
                   booster=None,
                   tree_method=None,
-                  n_jobs=None,
+                  n_jobs=1,
                   gamma=None,
                   min_child_weight=None,
                   max_delta_step=None,
@@ -109,3 +110,55 @@ class XGBRegressor(xgb.XGBRegressor):
 #------------------------------------------------------------------------------
 # LightGBM
 #------------------------------------------------------------------------------
+class LGBMegressor(lgbm.LGBMRegressor):
+    """
+    This class copies verbatim the LightGBM regressor
+    See: https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMRegressor.html#lightgbm-lgbmregressor
+    """
+    # -------------------------------------------------------------------------
+    # Constructor function
+    # -------------------------------------------------------------------------
+    def __init__(self,
+                 boosting_type='gbdt',
+                 num_leaves=31,
+                 max_depth=-1,
+                 learning_rate=0.1,
+                 n_estimators=100,
+                 subsample_for_bin=200000,
+                 objective='regression',
+                 class_weight=None,
+                 min_split_gain=0.0,
+                 min_child_weight=0.001,
+                 min_child_samples=20,
+                 subsample=1.0,
+                 subsample_freq=0,
+                 colsample_bytree=1.0,
+                 reg_alpha=0.0,
+                 reg_lambda=0.0,
+                 random_state=None,
+                 n_jobs=1,
+                 silent='warn',
+                 importance_type='split'
+                 ):
+        super().__init__(
+            boosting_type=boosting_type,
+            num_leaves=num_leaves,
+            max_depth=max_depth,
+            learning_rate=learning_rate,
+            n_estimators=n_estimators,
+            subsample_for_bin=subsample_for_bin,
+            objective=objective,
+            class_weight=class_weight,
+            min_split_gain=min_split_gain,
+            min_child_weight=min_child_weight,
+            min_child_samples=min_child_samples,
+            subsample=subsample,
+            subsample_freq=subsample_freq,
+            colsample_bytree=colsample_bytree,
+            reg_alpha=reg_alpha,
+            reg_lambda=reg_lambda,
+            random_state=random_state,
+            n_jobs=n_jobs,
+            silent=silent,
+            importance_type=importance_type
+            )

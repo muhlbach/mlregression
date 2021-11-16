@@ -6,7 +6,7 @@ import numpy as np
 from sklearn import (dummy,ensemble,gaussian_process,isotonic,kernel_ridge,
                      linear_model,neighbors,neural_network,svm,tree,)
 from itertools import compress
-import xgboost as xgb
+
 # User
 from ..estimator import (boosting)
 from .sanity_check import check_estimator
@@ -72,11 +72,7 @@ def get_param_grid_from_estimator(estimator):
     """
     #--------------------------------------------------------------------------
     # from ..estimator.boosting
-    #--------------------------------------------------------------------------    
-
-    print("Is boosting.XGBRegressor", isinstance(estimator, boosting.XGBRegressor))
-    print("Is xgb.XGBRegressor",isinstance(estimator, xgb.XGBRegressor))
-    
+    #--------------------------------------------------------------------------        
     if isinstance(estimator, boosting.XGBRegressor):
         param_grid = {
             "n_estimators":[100,200,500],
@@ -86,7 +82,6 @@ def get_param_grid_from_estimator(estimator):
             # "objective":'reg:squarederror', # Leads to RuntimeError: Cannot clone object XGBRegressor(...), as the constructor either does not set or modifies parameter objective
             "booster":None,
             "tree_method":None,
-            "n_jobs":None,
             "gamma":[None, 0, 0.5],
             "min_child_weight":[None,1,2,4,8],
             "max_delta_step":None,
@@ -95,18 +90,35 @@ def get_param_grid_from_estimator(estimator):
             "colsample_bylevel":None,
             "colsample_bynode":[0.8,1,0.5],
             "reg_alpha":None,
-            "reg_lambda":1e-05,
+            "reg_lambda":[1e-05,0],
             "scale_pos_weight":None,
             "base_score":None,
-            "random_state":None,
-            "missing":np.nan,
             "num_parallel_tree":None,
             "monotone_constraints":None,
             "interaction_constraints":None,
             "importance_type":'gain',
-            "gpu_id":None,
-            "validate_parameters":None
             }
+    
+    elif isinstance(estimator, boosting.LGBMegressor):
+        param_grid = {
+            "boosting_type":'gbdt',
+            "num_leaves":[31, 21, 41],
+            "max_depth":[-1,2,4,8,16],
+            "learning_rate":[0.1,0.8, 0.5, 0.3, 0.01],
+            "n_estimators":[100,200,500],
+            "subsample_for_bin":200000,
+            "objective":'regression',
+            "class_weight":None,
+            "min_split_gain":0.0,
+            "min_child_weight":0.001,
+            "min_child_samples":[20,4,8,16],
+            "subsample":[1.0,0.8,0.5],
+            "subsample_freq":0,
+            "colsample_bytree":[1.0,2/3,1/3],
+            "reg_alpha":[0.0,1e-05],
+            "reg_lambda":[0.0,1e-05],
+            "importance_type":'split'
+            }  
     
     #--------------------------------------------------------------------------
     # from sklearn.dummy
