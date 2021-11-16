@@ -18,7 +18,7 @@ from sklearn.model_selection import train_test_split
 from mlregression.mlreg import MLRegressor
 from mlregression.mlreg import RF
 from mlregression.estimator.boosting import XGBRegressor, LGBMegressor
-
+from mlregression.estimator import boosting
 #------------------------------------------------------------------------------
 # Data
 #------------------------------------------------------------------------------
@@ -34,7 +34,7 @@ X, y = make_regression(n_samples=500,
 X_train, X_test, y_train, y_test = train_test_split(X, y)
 
 #------------------------------------------------------------------------------
-# Main use of MLRegressor
+# Example 1: Main use of MLRegressor
 #------------------------------------------------------------------------------
 # Instantiate model and specify the underlying regressor by a string
 mlreg = MLRegressor(estimator="RandomForestRegressor",
@@ -54,7 +54,7 @@ mlreg.best_estimator_
 mlreg.score(X=X_test,y=y_test)
 
 #------------------------------------------------------------------------------
-# RF
+# Example 2: RF
 #------------------------------------------------------------------------------
 # Instantiate model
 rf = RF(max_n_models=2)
@@ -66,7 +66,7 @@ rf.fit(X=X_train, y=y_train)
 rf.score(X=X_test, y=y_test)
 
 #------------------------------------------------------------------------------
-# XGBoost
+# Example 3: XGBoost
 #------------------------------------------------------------------------------
 # Instantiate model
 xgb = MLRegressor(estimator=XGBRegressor(),
@@ -79,10 +79,10 @@ xgb.fit(X=X_train, y=y_train)
 xgb.score(X=X_test, y=y_test)
 
 #------------------------------------------------------------------------------
-# LightGBM
+# Example 4: LightGBM
 #------------------------------------------------------------------------------
 # Instantiate model
-lgbm = MLRegressor(estimator=LGBMegressor(),
+lgbm = MLRegressor(estimator="LGBMegressor",
                   max_n_models=2)
 
 # Fit
@@ -91,9 +91,8 @@ lgbm.fit(X=X_train, y=y_train)
 # Predict and score
 lgbm.score(X=X_test, y=y_test)
 
-
 #------------------------------------------------------------------------------
-# NeuralNets
+# Example 5: Neural Nets
 #------------------------------------------------------------------------------
 # Instantiate model
 nn = MLRegressor(estimator="MLPRegressor",
@@ -106,7 +105,7 @@ nn.fit(X=X_train, y=y_train)
 nn.score(X=X_test, y=y_test)
 
 #------------------------------------------------------------------------------
-# LassoCV/RidgeCV/ElasticNetCV/LarsCV/LassoLarsCV (native scikit-learn implementation)
+# Example 6: LassoCV/RidgeCV/ElasticNetCV/LarsCV/LassoLarsCV (native scikit-learn implementation)
 #------------------------------------------------------------------------------
 # Instantiate model
 penalized = MLRegressor(estimator="LassoCV")
@@ -126,7 +125,7 @@ estimator = RidgeCV()
 
 
 
-
+# estimator_name="LGBMegressor"
 
 
 

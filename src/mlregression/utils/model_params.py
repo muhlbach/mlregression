@@ -14,29 +14,52 @@ from .sanity_check import check_estimator
 #------------------------------------------------------------------------------
 # Model tools
 #------------------------------------------------------------------------------
-def compose_model(name, perform_estimator_check=True, verbose=True):
+def compose_model(estimator_name, perform_estimator_check=True, verbose=True):
         
         # Modules from scikit-learn used for regression
         SCIKIT_REGRESSION_MODULES = ["dummy","ensemble","gaussian_process",
                                      "isotonic","kernel_ridge","linear_model",
                                      "neighbors","neural_network","svm","tree",]
-
-        # Check if 'name' is an attribute of any Scikit-learn module
-        scikit_regression_modules_check = [hasattr(eval(lib), name) for lib in SCIKIT_REGRESSION_MODULES]
-        is_scikit = any(scikit_regression_modules_check)
         
-        # Compose model
-        if is_scikit:
-            # Locate library
-            scikit_module = list(compress(SCIKIT_REGRESSION_MODULES, scikit_regression_modules_check))[0]
-            if verbose:
-                print(f"Algorithm '{name}' is part of Scikit-learn, namely an attribute of: '{scikit_module}'")
-                            
-            # Instantiate model
-            estimator = eval(scikit_module+"."+name+"()")
+        # Internal modules used for regression
+        NONSCIKIT_REGRESSION_MODULES = ["boosting",]
+        
+        REGRESSION_MODULES = [SCIKIT_REGRESSION_MODULES,NONSCIKIT_REGRESSION_MODULES]
+        
+        # Count the number of modules in which we find the model name
+        n_modules_found_in = 0
+        
+        for reg_module in REGRESSION_MODULES:
             
-        else:
-            raise NotImplementedError()
+            # Check if 'estimator_name' is an attribute of any module
+            module_check = [hasattr(eval(lib), estimator_name) for lib in reg_module]
+        
+            is_found = any(module_check)
+    
+            # Compose model            
+            if is_found:
+                
+                # Check counter
+                if n_modules_found_in>1:
+                    raise Exception(f"""Algorithm '{estimator_name}' is part of multiple modules, namely at least two of
+                                    \n{SCIKIT_REGRESSION_MODULES}
+                                    \n{NONSCIKIT_REGRESSION_MODULES}
+                                    """)
+                
+                # Locate module
+                module = list(compress(reg_module, module_check))[0]
+
+                # Instantiate model
+                estimator = eval(module+"."+estimator_name+"()")
+
+                # Increase model counter
+                n_modules_found_in += 1
+
+        if n_modules_found_in==0:
+            raise Exception(f"""Algorithm '{estimator_name}' is NOT part any module, namely neither of
+                            \n{SCIKIT_REGRESSION_MODULES}
+                            \n{NONSCIKIT_REGRESSION_MODULES}
+                            """)
 
         # Model checks
         if perform_estimator_check:

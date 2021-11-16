@@ -56,7 +56,9 @@ class BaseMLRegressor(object):
         # ---------------------------------------------------------------------
         # Check estimator type
         if isinstance(self.estimator, str):
-            self.estimator = compose_model(name=self.estimator,perform_estimator_check=True, verbose=self.verbose)
+            self.estimator = compose_model(estimator_name=self.estimator,
+                                           perform_estimator_check=True,
+                                           verbose=self.verbose)
         else:
             check_estimator(self.estimator)
             

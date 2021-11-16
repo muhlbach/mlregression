@@ -1,7 +1,7 @@
 
 # Machine learning regression (mlregression)
 
-Machine Learning Regression (mlregrresion) is an off-the-shelf implementation fitting and tuning the most popular ML methods (provided by scikit-learn).
+Machine Learning Regression (mlregrresion) is an off-the-shelf implementation of the most popular ML methods that automatically takes care of fitting and parameter tuning.
 
 Currently, the __fully__ implemented models include:
 - Ensemble trees (Random forests, XGBoost, LightGBM, GradientBoostingRegressor, ExtraTreesRegressor)
@@ -10,7 +10,7 @@ Currently, the __fully__ implemented models include:
 
 _NB!_ When using penalized regressions, consider using the native CV-implementation from scikit-learn for speed. See Example 6 below.
 
-In addition, all scikit-learn learners can be supplied (e.g., HuberRegressor or BayesianRidge), but then one has to provide a parameter grid as well!
+In addition, all scikit-learn regressors can be supplied (e.g., HuberRegressor or BayesianRidge), but then one has to provide a parameter grid as well!
 
 Please contact the authors below if you find any bugs or have any suggestions for improvement. Thank you!
 
