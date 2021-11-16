@@ -9,7 +9,7 @@ from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, KFold, Tim
 
 
 # User
-from ..utils.tools import SingleSplit
+from ..utils.tools import SingleSplit, remove_conditionally_invalid_keys,unlist_dict_values
 from ..utils.model_params import get_param_grid_from_estimator, compose_model, update_params
 from ..utils.sanity_check import check_param_grid, check_X_Y, check_X, check_estimator
 from ..utils.exceptions import WrongInputException
@@ -61,17 +61,21 @@ class BaseMLRegressor(object):
                                            verbose=self.verbose)
         else:
             check_estimator(self.estimator)
-            
+        
         # ---------------------------------------------------------------------
         # Parameters
         # ---------------------------------------------------------------------
         # Obtain parameters if not provided
         if self.param_grid is None:
             self.param_grid = get_param_grid_from_estimator(estimator=self.estimator)
-            
+        
         # Add default parameters if for some reason not specified    
         self.param_grid = update_params(old_param=self.estimator.get_params(),
                                         new_param=self.param_grid)
+        
+        # Remove invalid keys
+        self.param_grid = remove_conditionally_invalid_keys(d=self.param_grid,
+                                                            invalid_values=["deprecated"])
         
         # Set param_grid values to list if not already list
         self.param_grid = {k: list(set(v)) if isinstance(v, list) else v.tolist() if isinstance(v, np.ndarray) else [v] for k, v in self.param_grid.items()}
@@ -95,6 +99,7 @@ class BaseMLRegressor(object):
                                                    splitter=self.splitter,
                                                    n_models=self.n_models,
                                                    max_n_models=self.max_n_models)
+           
 
     # -------------------------------------------------------------------------
     # Class variables
@@ -143,14 +148,16 @@ class BaseMLRegressor(object):
         """
         Choose between grid search or randomized search, or simply the estimator if only one parametrization is provided.
         Note that if the estimator ends with "CV", we assume it has a native implementation as in scikit-learn. We use that in this case.
-        """
-        # 
+        """       
         if type(estimator).__name__[-2:]=="CV":
+            # Unlist if possible
+            param_grid = unlist_dict_values(d=param_grid)
+            
             # Get first element of parameter grid
-            param_grid = {k: param_grid.get(k,None)[0] for k in param_grid.keys()}
+            # param_grid = {k: param_grid.get(k,None)[0] for k in param_grid.keys()}
             # Set estimator
             estimator_cv = estimator
-            
+                        
             # Update params
             param_grid = update_params(old_param=param_grid,
                                        new_param={

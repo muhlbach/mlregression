@@ -10,6 +10,7 @@ from itertools import compress
 # User
 from ..estimator import (boosting)
 from .sanity_check import check_estimator
+from .exceptions import WrongInputException
 
 #------------------------------------------------------------------------------
 # Model tools
@@ -84,7 +85,22 @@ def update_params(old_param, new_param, errors="raise"):
                 raise Exception(f"Parameters {k} not recognized as a default parameter for this estimator")
             else:
                 pass
+            
     return updated_param
+
+def isinstance_double(obj, class_or_tuple, how="all"):
+    ALLOWED_HOW = ["all", "any"]
+    
+    if how=="all":
+        is_instance = isinstance(obj,class_or_tuple) and (obj.__class__.__name__==class_or_tuple.__name__)
+    elif how=="any":
+        is_instance = isinstance(obj,class_or_tuple) or (obj.__class__.__name__==class_or_tuple.__name__)    
+    else:
+        raise WrongInputException(input_name="how",
+                                  provided_input=how,
+                                  allowed_inputs=ALLOWED_HOW)
+    
+    return is_instance
 
 
 def get_param_grid_from_estimator(estimator):
@@ -96,7 +112,7 @@ def get_param_grid_from_estimator(estimator):
     #--------------------------------------------------------------------------
     # from ..estimator.boosting
     #--------------------------------------------------------------------------        
-    if isinstance(estimator, boosting.XGBRegressor):
+    if isinstance_double(estimator, boosting.XGBRegressor):
         param_grid = {
             "n_estimators":[100,200,500],
             "max_depth":[None,2,4,8,16],
@@ -122,7 +138,7 @@ def get_param_grid_from_estimator(estimator):
             "importance_type":'gain',
             }
     
-    elif isinstance(estimator, boosting.LGBMegressor):
+    elif isinstance_double(estimator, boosting.LGBMegressor):
         param_grid = {
             "boosting_type":'gbdt',
             "num_leaves":[31,11,21,41],
@@ -146,7 +162,7 @@ def get_param_grid_from_estimator(estimator):
     #--------------------------------------------------------------------------
     # from sklearn.dummy
     #--------------------------------------------------------------------------
-    elif isinstance(estimator, dummy.DummyRegressor):
+    elif isinstance_double(estimator, dummy.DummyRegressor):
         param_grid = {
             "strategy":["mean","median","quantile","constant"],
             "constant":None,
@@ -156,13 +172,13 @@ def get_param_grid_from_estimator(estimator):
     #--------------------------------------------------------------------------
     # from sklearn.ensemble
     #--------------------------------------------------------------------------
-    # elif isinstance(estimator, ensemble.AdaBoostRegressor):
+    # elif isinstance_double(estimator, ensemble.AdaBoostRegressor):
     #     raise NotImplementedError()
         
-    # elif isinstance(estimator, ensemble.BaggingRegressor):
+    # elif isinstance_double(estimator, ensemble.BaggingRegressor):
     #     raise NotImplementedError()
         
-    elif isinstance(estimator, ensemble.ExtraTreesRegressor):
+    elif isinstance_double(estimator, ensemble.ExtraTreesRegressor):
         param_grid = {
             "n_estimators":500,                                                # Default 100 
             'criterion':'squared_error',
@@ -179,7 +195,7 @@ def get_param_grid_from_estimator(estimator):
             'max_samples':None
             }   
 
-    elif isinstance(estimator, ensemble.GradientBoostingRegressor):
+    elif isinstance_double(estimator, ensemble.GradientBoostingRegressor):
         param_grid = {
             "loss":'squared_error',
             'learning_rate':[0.1,0.8, 0.5, 0.3, 0.01],
@@ -201,7 +217,7 @@ def get_param_grid_from_estimator(estimator):
             'ccp_alpha':0.0
             }
         
-    elif isinstance(estimator, ensemble.RandomForestRegressor):
+    elif isinstance_double(estimator, ensemble.RandomForestRegressor):
         param_grid = {
             "n_estimators":500,                                                # Default 100 
             "criterion":'squared_error',
@@ -222,40 +238,39 @@ def get_param_grid_from_estimator(estimator):
             "max_samples":None
             }
 
-    # elif isinstance(estimator, ensemble.HistGradientBoostingRegressor):
+    # elif isinstance_double(estimator, ensemble.HistGradientBoostingRegressor):
     #     raise NotImplementedError()    
 
     #--------------------------------------------------------------------------
     # from sklearn.gaussian_process
     #--------------------------------------------------------------------------
-    # elif isinstance(estimator, gaussian_process.GaussianProcessRegressor):
+    # elif isinstance_double(estimator, gaussian_process.GaussianProcessRegressor):
     #     raise NotImplementedError()    
 
     #--------------------------------------------------------------------------
     # from sklearn.isotonic
     #--------------------------------------------------------------------------
-    # elif isinstance(estimator, isotonic.IsotonicRegression):
+    # elif isinstance_double(estimator, isotonic.IsotonicRegression):
     #     raise NotImplementedError()    
     
     #--------------------------------------------------------------------------
     # from sklearn.kernel_ridge
     #--------------------------------------------------------------------------
-    # elif isinstance(estimator, kernel_ridge.KernelRidge):
+    # elif isinstance_double(estimator, kernel_ridge.KernelRidge):
     #     raise NotImplementedError()    
     
     #--------------------------------------------------------------------------
     # from sklearn.linear_model
     #--------------------------------------------------------------------------
-    elif isinstance(estimator, linear_model.LinearRegression):
+    elif isinstance_double(estimator, linear_model.LinearRegression):
         param_grid = {
             "fit_intercept":True,
-            "normalize":'deprecated',
             "copy_X":True,
             "n_jobs":None,
             "positive":False
             }
                 
-    elif isinstance(estimator, linear_model.Ridge):
+    elif isinstance_double(estimator, linear_model.Ridge):
         param_grid = {
             'alpha':[1.0,0.001, 0.1, 10, 100, 1000, 10000], 
             'fit_intercept':True,
@@ -267,7 +282,8 @@ def get_param_grid_from_estimator(estimator):
             'random_state':None
             }
         
-    elif isinstance(estimator, linear_model.RidgeCV):
+
+    elif isinstance_double(estimator, linear_model.RidgeCV):
         param_grid = {
             'alphas':(1.0,0.001, 0.1, 10, 100, 1000, 10000),
             'fit_intercept':True,
@@ -277,23 +293,23 @@ def get_param_grid_from_estimator(estimator):
             'alpha_per_target':False
             }
         
-    # elif isinstance(estimator, linear_model.SGDRegressor):
+    # elif isinstance_double(estimator, linear_model.SGDRegressor):
     #     raise NotImplementedError()    
         
-    elif isinstance(estimator, linear_model.ElasticNet):
+    elif isinstance_double(estimator, linear_model.ElasticNet):
         param_grid = {
             'alpha':np.exp(np.linspace(start=np.log(100), stop=np.log(100*0.000001), num=1000)),
             'l1_ratio':[0.5,1/4,3/4,1],
             'fit_intercept':True,
             'precompute':False,
-            'max_iter':1000,
+            'max_iter':10,
             'tol':0.0001,
             'warm_start':False,
             'positive':False,
             'selection':'cyclic'
             }
 
-    elif isinstance(estimator, linear_model.ElasticNetCV):
+    elif isinstance_double(estimator, linear_model.ElasticNetCV):
         param_grid = {
             'l1_ratio':[0.5,1/4,3/4,1],
             'eps':0.001,
@@ -307,7 +323,7 @@ def get_param_grid_from_estimator(estimator):
             'selection':'cyclic'
             }
 
-    elif isinstance(estimator, linear_model.Lars):
+    elif isinstance_double(estimator, linear_model.Lars):        
         param_grid = {
             'fit_intercept':True,
             'precompute':'auto',
@@ -318,7 +334,7 @@ def get_param_grid_from_estimator(estimator):
             'jitter':None,
             }
 
-    elif isinstance(estimator, linear_model.LarsCV):
+    elif isinstance_double(estimator, linear_model.LarsCV):
         param_grid = {
             'fit_intercept':True,
             'max_iter':500,
@@ -328,7 +344,7 @@ def get_param_grid_from_estimator(estimator):
             'copy_X':True
             }
         
-    elif isinstance(estimator, linear_model.Lasso):
+    elif isinstance_double(estimator, linear_model.Lasso):
         param_grid = {
             'alpha':np.exp(np.linspace(start=np.log(100), stop=np.log(100*0.000001), num=1000)),
             'fit_intercept':True,
@@ -341,7 +357,7 @@ def get_param_grid_from_estimator(estimator):
             'selection':'cyclic'
             }
 
-    elif isinstance(estimator, linear_model.LassoCV):
+    elif isinstance_double(estimator, linear_model.LassoCV):
         param_grid = {
             'eps':0.001,
             'n_alphas':1000,
@@ -354,7 +370,7 @@ def get_param_grid_from_estimator(estimator):
             'selection':'cyclic'
             }
 
-    elif isinstance(estimator, linear_model.LassoLars):
+    elif isinstance_double(estimator, linear_model.LassoLars):
         param_grid = {
             'alpha':np.exp(np.linspace(start=np.log(100), stop=np.log(100*0.000001), num=1000)),
             'fit_intercept':True,
@@ -367,7 +383,7 @@ def get_param_grid_from_estimator(estimator):
             'jitter':None,
             }
 
-    elif isinstance(estimator, linear_model.LassoLarsCV):
+    elif isinstance_double(estimator, linear_model.LassoLarsCV):
         param_grid = {
             'fit_intercept':True,
             'max_iter':500,
@@ -378,25 +394,25 @@ def get_param_grid_from_estimator(estimator):
             'positive':False
             }
         
-    # elif isinstance(estimator, linear_model.OrthogonalMatchingPursuit):
+    # elif isinstance_double(estimator, linear_model.OrthogonalMatchingPursuit):
     #     raise NotImplementedError()            
         
-    # elif isinstance(estimator, linear_model.ARDRegression):
+    # elif isinstance_double(estimator, linear_model.ARDRegression):
     #     raise NotImplementedError()           
 
-    # elif isinstance(estimator, linear_model.BayesianRidge):
+    # elif isinstance_double(estimator, linear_model.BayesianRidge):
     #     raise NotImplementedError()           
 
-    # elif isinstance(estimator, linear_model.HuberRegressor):
+    # elif isinstance_double(estimator, linear_model.HuberRegressor):
     #     raise NotImplementedError()           
 
-    # elif isinstance(estimator, linear_model.QuantileRegressor):
+    # elif isinstance_double(estimator, linear_model.QuantileRegressor):
     #     raise NotImplementedError()           
 
-    # elif isinstance(estimator, linear_model.RANSACRegressor):
+    # elif isinstance_double(estimator, linear_model.RANSACRegressor):
     #     raise NotImplementedError()           
 
-    # elif isinstance(estimator, linear_model.TheilSenRegressor):
+    # elif isinstance_double(estimator, linear_model.TheilSenRegressor):
     #     raise NotImplementedError()                   
         
     #--------------------------------------------------------------------------
@@ -406,7 +422,7 @@ def get_param_grid_from_estimator(estimator):
     #--------------------------------------------------------------------------
     # from sklearn.neural_network
     #--------------------------------------------------------------------------
-    elif isinstance(estimator, neural_network.MLPRegressor):
+    elif isinstance_double(estimator, neural_network.MLPRegressor):
         param_grid = {
             'hidden_layer_sizes':[(100,), (2,), (2,4), (2,4,8,), (2,4,8,16,), (2,4,8,16,32),
                                           (4,), (4,8), (4,8,16), (4,8,16,32),

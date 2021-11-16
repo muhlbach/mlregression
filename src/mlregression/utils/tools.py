@@ -7,6 +7,8 @@ import pickle
 from sklearn.utils import indexable
 from sklearn.utils.validation import _num_samples
 
+# User
+from .exceptions import WrongInputException
 #------------------------------------------------------------------------------
 # Main
 #------------------------------------------------------------------------------
@@ -18,6 +20,65 @@ def break_links(x):
     """ Break link to x by copying it"""
     x = x.copy()
     return x
+
+def isin(pattern, x, how="all", return_element_wise=True):
+    """Check if any of the elements in 'pattern' is included in 'x'"""
+    ALLOWED_HOW = ["all", "any"]
+    ITERABLES = (list, tuple)
+    
+    if how not in ALLOWED_HOW:
+        raise WrongInputException(input_name="how",
+                                  provided_input=how,
+                                  allowed_inputs=ALLOWED_HOW)
+
+    if not isinstance(x, ITERABLES):
+        if how=="all":
+            is_in = all(p == x for p in pattern)
+        elif how=="any":
+            is_in = any(p == x for p in pattern)
+
+    else:
+        is_in = [isin(pattern, x=y, how=how) for y in x]
+        
+        if not return_element_wise:
+            is_in = any(is_in)
+                
+    return is_in
+
+def remove_conditionally_invalid_keys(d, invalid_values=["deprecated"]):
+    """ Remove keys from dictionary for which values contain specified values"""
+    d = {k:v for k,v in d.items() if not isin(pattern=invalid_values,x=v,how="any",return_element_wise=False)}
+    
+    return d
+
+def remove_invalid_attr(obj, invalid_attr):
+    ALLOWED_INVALID_ATTR = [dict, list]
+    
+    if isinstance(invalid_attr, dict):
+        for k,v in invalid_attr.items():
+            if hasattr(obj, k):
+                delattr(obj, k)
+    elif isinstance(invalid_attr, list):
+        for k in invalid_attr:
+            if hasattr(obj, k):
+                delattr(obj, k)
+    else:
+        raise WrongInputException(input_name="invalid_attr",
+                                  provided_input=invalid_attr,
+                                  allowed_inputs=ALLOWED_INVALID_ATTR)        
+
+    return obj
+
+def unlist_dict_values(d):
+    
+    # Turn all elements into list
+    d = {key:(value if isinstance(value, list) else [value]) for key,value in d.items()}
+    
+    # Unlist if possible
+    d = {key:(value if len(value)>1 else value[0]) for key,value in d.items()}
+    
+    return d
+    
 
 #------------------------------------------------------------------------------
 # Save and load models
