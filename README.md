@@ -14,17 +14,26 @@ This code has the following dependencies:
 - numpy 1.19+
 - pandas 1.3+
 - scikit-learn 1+
+- xgboost 1.3+
 
 ## Usage
 
 ```python
-# Import
+#------------------------------------------------------------------------------
+# Libraries
+#------------------------------------------------------------------------------
+# Standard
 from sklearn.datasets import make_regression
-from mlregression.base.base_mlreg import BaseMLRegressor
+from sklearn.model_selection import train_test_split
 
-# Specify estimator
-estimator = "RandomForestRegressor"
+# This library
+from mlregression.mlreg import MLRegressor
+from mlregression.mlreg import RF
+from mlregression.estimator.boosting import XGBRegressor
 
+#------------------------------------------------------------------------------
+# Data
+#------------------------------------------------------------------------------
 # Generate data
 X, y = make_regression(n_samples=500,
                        n_features=10, 
@@ -34,16 +43,51 @@ X, y = make_regression(n_samples=500,
                        coef=False,
                        random_state=1991)
 
+X_train, X_test, y_train, y_test = train_test_split(X, y)
+
+#------------------------------------------------------------------------------
+# Main use of MLRegressor
+#------------------------------------------------------------------------------
 # Instantiate model
-mlreg = BaseMLRegressor(estimator=estimator,
+mlreg = MLRegressor(estimator="RandomForestRegressor",
                         max_n_models=2)
 
 # Fit
-mlreg.fit(X=X, y=y)
+mlreg.fit(X=X_train, y=y_train)
+
+# Predict
+y_hat = mlreg.predict(X=X_test)
 
 # Access all the usual attributes
 mlreg.best_score_
 mlreg.best_estimator_
+
+mlreg.score(X=X_test,y=y_test)
+
+#------------------------------------------------------------------------------
+# RF
+#------------------------------------------------------------------------------
+# Instantiate model
+rf = RF(max_n_models=2)
+
+# Fit
+rf.fit(X=X_train, y=y_train)
+
+# Predict and score
+rf.score(X=X_test,y=y_test)
+
+#------------------------------------------------------------------------------
+# XGBoost
+#------------------------------------------------------------------------------
+# Instantiate model
+xgb = MLRegressor(estimator=XGBRegressor(),
+                  max_n_models=2)
+
+# Fit
+xgb.fit(X=X_train, y=y_train)
+
+# Predict and score
+xgb.score(X=X_test,y=y_test)
 ```
 
 <!-- ## Example

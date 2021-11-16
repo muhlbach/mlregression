@@ -14,9 +14,9 @@ class MLRegressor(BaseMLRegressor):
     """
     This class implements the mlreg command
     """
-    # --------------------
+    # -------------------------------------------------------------------------
     # Constructor function
-    # --------------------
+    # -------------------------------------------------------------------------
     def __init__(self,
                estimator,
                param_grid=None,
@@ -33,7 +33,7 @@ class MLRegressor(BaseMLRegressor):
                fold_type="KFold",
                max_n_models=50,
                verbose=False,
-                  ):
+               ):
         super().__init__(
             estimator=estimator,
             param_grid=param_grid,
@@ -51,10 +51,10 @@ class RF(BaseMLRegressor):
     """
     This class implements the mlreg command
     """
-    # --------------------
+    # -------------------------------------------------------------------------
     # Constructor function
-    # --------------------
-    def __init__(self,
+    # -------------------------------------------------------------------------
+    def __init__(self, 
                param_grid=None,
                cv_params={'scoring':None,
                           'n_jobs':None,
@@ -69,7 +69,7 @@ class RF(BaseMLRegressor):
                fold_type="KFold",
                max_n_models=50,
                verbose=False,
-                  ):
+               ):
         super().__init__(
             estimator="RandomForestRegressor",
             param_grid=param_grid,

@@ -190,12 +190,12 @@ class BaseMLRegressor(object):
                         
         return y_hat
         
-    def score(self,X,y,sample_weight=None):
+    def score(self,X,y):
         
         # Check X and Y
         X, y = check_X_Y(X, y)
                         
-        score = self.estimator_cv.score(X=X,y=y,sample_weight=sample_weight)
+        score = self.estimator_cv.score(X=X,y=y)
                 
         return score
 
