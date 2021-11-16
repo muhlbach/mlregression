@@ -66,7 +66,7 @@ class BaseMLRegressor(object):
         # Obtain parameters if not provided
         if self.param_grid is None:
             self.param_grid = get_param_grid_from_estimator(estimator=self.estimator)
-
+            
         # Set param_grid values to list if not already list
         self.param_grid = {k: list(set(v)) if isinstance(v, list) else v.tolist() if isinstance(v, np.ndarray) else [v] for k, v in self.param_grid.items()}
 

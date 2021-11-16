@@ -2,11 +2,13 @@
 # Libraries
 #------------------------------------------------------------------------------
 # Standard
+import numpy as np
 from sklearn import (dummy,ensemble,gaussian_process,isotonic,kernel_ridge,
                      linear_model,neighbors,neural_network,svm,tree,)
 from itertools import compress
-
+import xgboost as xgb
 # User
+from ..estimator import (boosting)
 from .sanity_check import check_estimator
 
 #------------------------------------------------------------------------------
@@ -69,9 +71,47 @@ def get_param_grid_from_estimator(estimator):
     Read the scikit-learn reference here: https://scikit-learn.org/stable/modules/classes.html# 
     """
     #--------------------------------------------------------------------------
+    # from ..estimator.boosting
+    #--------------------------------------------------------------------------    
+
+    print("Is boosting.XGBRegressor", isinstance(estimator, boosting.XGBRegressor))
+    print("Is xgb.XGBRegressor",isinstance(estimator, xgb.XGBRegressor))
+    
+    if isinstance(estimator, boosting.XGBRegressor):
+        param_grid = {
+            "n_estimators":[100,200,500],
+            "max_depth":[None,2,4,8,16],
+            "learning_rate":[1, 0.8, 0.5, 0.3, 0.1, 0.01],
+            "verbosity":0,
+            # "objective":'reg:squarederror', # Leads to RuntimeError: Cannot clone object XGBRegressor(...), as the constructor either does not set or modifies parameter objective
+            "booster":None,
+            "tree_method":None,
+            "n_jobs":None,
+            "gamma":[None, 0, 0.5],
+            "min_child_weight":[None,1,2,4,8],
+            "max_delta_step":None,
+            "subsample":[0.8,1,0.5],
+            "colsample_bytree":[None,1,2/3,1/3],
+            "colsample_bylevel":None,
+            "colsample_bynode":[0.8,1,0.5],
+            "reg_alpha":None,
+            "reg_lambda":1e-05,
+            "scale_pos_weight":None,
+            "base_score":None,
+            "random_state":None,
+            "missing":np.nan,
+            "num_parallel_tree":None,
+            "monotone_constraints":None,
+            "interaction_constraints":None,
+            "importance_type":'gain',
+            "gpu_id":None,
+            "validate_parameters":None
+            }
+    
+    #--------------------------------------------------------------------------
     # from sklearn.dummy
     #--------------------------------------------------------------------------
-    if isinstance(estimator, dummy.DummyRegressor):
+    elif isinstance(estimator, dummy.DummyRegressor):
         param_grid = {
             "strategy":["mean","median","quantile","constant"],
             "constant":None,
@@ -97,7 +137,7 @@ def get_param_grid_from_estimator(estimator):
         param_grid = {
             "n_estimators":500,                                                # Default 100 
             "criterion":'squared_error',
-            "max_depth":[None,4,8,16],
+            "max_depth":[None,2,4,8,16],
             "min_samples_split":[2,4,8,16],
             "min_samples_leaf":[1,2,4,8],
             "min_weight_fraction_leaf":0.0,
@@ -267,47 +307,7 @@ def get_param_grid_from_estimator(estimator):
     #             "l1_ratio": [1/4, 1/2, 3/4, 1]
     #             }
     #     },
-    #     "XGBRegressor" : {
-    #         "model_params" : {
-    #             'booster' : 'gbtree',
-    #             'objective' : "reg:squarederror",
-    #             'verbosity' : 1,
-    #             'tree_method' : 'auto',
-    #             'validate_parameters' : 1
-    #             },
-    #         "tuning_params" : {
-    #             'learning_rate': [0.3, 0.1, 0.01, 0.5],
-    #             'gamma': [0, 0.5],
-    #             'max_depth': [6, 8, 4, 2],
-    #             'min_child_weight': [1, 4, 8],
-    #             'subsample': [1, 0.7],
-    #             'colsample_bytree': [1, 2/3, 1/3],
-    #             'n_estimators': [100, 200, 400]
-    #             }
-    #     },
-    #     "RandomForestRegressor" : {
-    #         "model_params" : {
-    #             "criterion":'mse',
-    #             "min_weight_fraction_leaf":0.0,
-    #             'min_impurity_decrease':0.0,
-    #             'min_impurity_split':None,
-    #             'bootstrap': True,
-    #             'oob_score':False,
-    #             'n_jobs':None,
-    #             'random_state':None,
-    #             'verbose':0,
-    #             'warm_start':False,
-    #             'ccp_alpha':0.0,
-    #             'max_samples':None
-    #             },
-    #         "tuning_params" : {
-    #             'n_estimators': 500,
-    #             'min_samples_split': [2,4,8,16],
-    #             'min_samples_leaf': [1,2,4,8],
-    #             'max_features': [1/4,1/3,1/2,2/3, 'sqrt','log2'],
-    #             'max_leaf_nodes': None,
-    #             'max_depth': [4,8,16,None]
-    #             }
+
     #     },
     #     "ExtraTreesRegressor" : {
     #         "model_params" : {
