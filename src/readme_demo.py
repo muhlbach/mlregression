@@ -1,36 +1,3 @@
-
-# Machine learning regression (mlregression)
-
-Machine Learning Regression (mlregrresion) is an off-the-shelf implementation of the most popular ML methods that automatically takes care of fitting and parameter tuning.
-
-Currently, the __fully__ implemented models include:
-- Ensemble trees (Random forests, XGBoost, LightGBM, GradientBoostingRegressor, ExtraTreesRegressor)
-- Penalized regression (Ridge, Lasso, ElasticNet, Lars, LassoLars) 
-- Neural nets (Simple neural nets with 1-5 hidden layers, rely activation, and early stopping)
-
-_NB!_ When using penalized regressions, consider using the native CV-implementation from scikit-learn for speed. See Example 6 below.
-
-In addition, all scikit-learn regressors can be supplied (e.g., LinearRegression, HuberRegressor, or BayesianRidge), but then one has to provide a parameter grid as well!
-
-Please contact the authors below if you find any bugs or have any suggestions for improvement. Thank you!
-
-Author: Nicolaj Søndergaard Mühlbach (n.muhlbach at gmail dot com, muhlbach at mit dot edu) 
-
-## Code dependencies
-This code has the following dependencies:
-
-- Python 3.6+
-- numpy 1.19+
-- pandas 1.3+
-- scikit-learn 1+
-- scikit-learn-intelex 2021+
-- xgboost 1.3+
-- lightgbm 3.2+
-
-## Usage
-We demonstrate the use of __mlregression__ below, using random forests, xgboost, and lightGBM as underlying regressors.
-
-```python
 #------------------------------------------------------------------------------
 # Libraries
 #------------------------------------------------------------------------------
@@ -139,7 +106,3 @@ penalized.fit(X=X_train, y=y_train)
 
 # Predict and score
 penalized.score(X=X_test, y=y_test)
-```
-
-<!-- ## Example
-We provide an example script in `demo.py`. -->

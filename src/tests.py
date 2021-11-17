@@ -9,7 +9,6 @@ This script implements some basic tests of the package that should be run before
 # path_to_here = "/Users/muhlbach/Repositories/mlregression/src"
 # # Change path
 # os.chdir(path_to_here)
-
 #------------------------------------------------------------------------------
 # Libraries
 #------------------------------------------------------------------------------
@@ -19,29 +18,48 @@ from sklearn.datasets import make_regression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 
+# Import baseline modules
+
+from sklearn.linear_model import LinearRegression as LinearRegressionBase
+from sklearn.linear_model import RidgeCV as RidgeCVBase
+from sklearn.linear_model import LassoCV as LassoCVBase
+from sklearn.linear_model import ElasticNetCV as ElasticNetCVBase
+from sklearn.ensemble import RandomForestRegressor as RandomForestRegressorBase
+from sklearn.ensemble import ExtraTreesRegressor as ExtraTreesRegressorBase
+from sklearn.ensemble import GradientBoostingRegressor as GradientBoostingRegressorBase
+from xgboost import XGBRegressor as XGBRegressorBase
+from lightgbm import LGBMRegressor as LGBMegressorBase
+from sklearn.neural_network import MLPRegressor as MLPRegressorBase
+
 # This library
 from mlregression.mlreg import MLRegressor
 from mlregression.mlreg import RF
 from mlregression.estimator.boosting import XGBRegressor, LGBMegressor
 from mlregression.estimator import boosting
 
+from warnings import simplefilter
+from sklearn.exceptions import ConvergenceWarning
+simplefilter("ignore", category=ConvergenceWarning)
 #------------------------------------------------------------------------------
 # Settings
 #------------------------------------------------------------------------------
 # Set tolerance for MSE-error
-mse_tol = 1.5
+mse_tol_pct = 6
 
 # Number of samples
-n_obs = 400
+n_obs = 5000
 
 # Number of max models to run
-max_n_models = 50
+max_n_models = 10
 
 # All estimators as strings
-estimator_strings = ["RandomForestRegressor", "XGBRegressor", "LGBMegressor","ExtraTreesRegressor", "GradientBoostingRegressor",
-                     "MLPRegressor",
-                     "RidgeCV","LassoCV","ElasticNetCV",
-                     ]
+estimator_strings = [
+    "LinearRegression",
+    "RidgeCV", "LassoCV", "ElasticNetCV",
+    "RandomForestRegressor","ExtraTreesRegressor", "GradientBoostingRegressor",
+    "XGBRegressor", "LGBMegressor",
+    "MLPRegressor",
+    ]
 
 #------------------------------------------------------------------------------
 # Data
@@ -57,7 +75,6 @@ X, y = make_regression(n_samples=n_obs,
 
 X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-
 #------------------------------------------------------------------------------
 # Estimator as strings
 #------------------------------------------------------------------------------
@@ -67,153 +84,57 @@ print("""
       *************************************************************************
       """)
 
-# estimator="RandomForestRegressor"
+estimator="RandomForestRegressor"
 mse_strings = {}
 for i,estimator in enumerate(estimator_strings):
     print(f"""\nTesting {estimator} ~ {i+1}/{len(estimator_strings)}""")
     
+    #--------------------------------------------------------------------------
+    # Estimate base model
+    #--------------------------------------------------------------------------
+    # Instantiate base model without any parameters (using default)
+    base_estimator = eval(estimator+"Base()")
+
+    # Fit
+    base_estimator.fit(X=X_train, y=y_train)
+    
+    # Predict
+    y_hat_base = base_estimator.predict(X_test)
+    
+    # Compute mse
+    mse_hat_base = mean_squared_error(y_true=y_test,y_pred=y_hat_base)
+    
+    #--------------------------------------------------------------------------
+    # Estimate CV model
+    #--------------------------------------------------------------------------
     # Instantiate model
     mlreg = MLRegressor(estimator=estimator,
                         max_n_models=max_n_models)
     
     # Fit
     mlreg.fit(X=X_train, y=y_train)
-    
-    mlreg.best_params_
-    
+      
     # Predict
     y_hat = mlreg.predict(X=X_test)
 
     # Compute mse
     mse_hat = mean_squared_error(y_true=y_test,y_pred=y_hat)
     
-    if mse_hat>mse_tol:
+    #--------------------------------------------------------------------------
+    # Compare
+    #--------------------------------------------------------------------------
+    if (mse_hat - mse_hat_base) > (mse_tol_pct*mse_hat_base):
         raise Exception(f"""
-                        Performance of estimator '{estimator}' worse than tolerated!
-                        MSE={round(mse_hat,4)} but tolerance={mse_tol}
-                        Check coude!
+                        Performance of estimator '{estimator}' is more than {mse_tol_pct*100}% worse than base implementation!
+                        MSE={round(mse_hat,4)} but baseline MSE={round(mse_hat_base,4)}
+                        Check code!
                         """)
     
     # Store mse
     mse_strings[estimator] = mse_hat
 
-    print(f"""\tSuccesful! MSE({estimator}) = {round(mse_hat,8)}""")
-
-# HERE: Compare to default model !!!!!
-
-
-
-
-# from sklearn.ensemble import RandomForestRegressor
-# rf = RandomForestRegressor()
-# rf.set_params(**mlreg.best_params_)
-
-# rf.fit(X=X_train, y=y_train)
-
-# y_rf = rf.predict(X=X_test)
-
-# mean_squared_error(y_true=y_test,y_pred=y_rf)
-
-
-# #------------------------------------------------------------------------------
-# # Example 1: Main use of MLRegressor
-# #------------------------------------------------------------------------------
-# # Instantiate model and specify the underlying regressor by a string
-# mlreg = MLRegressor(estimator="RandomForestRegressor",
-#                     max_n_models=2)
-
-# # Fit
-# mlreg.fit(X=X_train, y=y_train)
-
-# # Predict
-# y_hat = mlreg.predict(X=X_test)
-
-# # Access all the usual attributes
-# mlreg.best_score_
-# mlreg.best_estimator_
-
-# # Compute the score
-# mlreg.score(X=X_test,y=y_test)
-
-# #------------------------------------------------------------------------------
-# # Example 2: RF
-# #------------------------------------------------------------------------------
-# # Instantiate model
-# rf = RF(max_n_models=2)
-
-# # Fit
-# rf.fit(X=X_train, y=y_train)
-
-# # Predict and score
-# rf.score(X=X_test, y=y_test)
-
-# #------------------------------------------------------------------------------
-# # Example 3: XGBoost
-# #------------------------------------------------------------------------------
-# # Instantiate model
-# xgb = MLRegressor(estimator=XGBRegressor(),
-#                   max_n_models=2)
-
-# # Fit
-# xgb.fit(X=X_train, y=y_train)
-
-# # Predict and score
-# xgb.score(X=X_test, y=y_test)
-
-# #------------------------------------------------------------------------------
-# # Example 4: LightGBM
-# #------------------------------------------------------------------------------
-# # Instantiate model
-# lgbm = MLRegressor(estimator="LGBMegressor",
-#                   max_n_models=2)
-
-# # Fit
-# lgbm.fit(X=X_train, y=y_train)
-
-# # Predict and score
-# lgbm.score(X=X_test, y=y_test)
-
-# #------------------------------------------------------------------------------
-# # Example 5: Neural Nets
-# #------------------------------------------------------------------------------
-# # Instantiate model
-# nn = MLRegressor(estimator="MLPRegressor",
-#                   max_n_models=2)
-
-# # Fit
-# nn.fit(X=X_train, y=y_train)
-
-# # Predict and score
-# nn.score(X=X_test, y=y_test)
-
-# #------------------------------------------------------------------------------
-# # Example 6: LassoCV/RidgeCV/ElasticNetCV/LarsCV/LassoLarsCV (native scikit-learn implementation)
-# #------------------------------------------------------------------------------
-# # Instantiate model
-# penalized = MLRegressor(estimator="LassoCV")
-
-# # Fit
-# penalized.fit(X=X_train, y=y_train)
-
-# # Predict and score
-# penalized.score(X=X_test, y=y_test)
-
-# #------------------------------------------------------------------------------
-# # Tests
-# #------------------------------------------------------------------------------
-# from sklearn.linear_model import LarsCV, Lars
-# estimator = LarsCV()
-# estimator = Lars()
-
-
-
-# # estimator_name="LGBMegressor"
-
-
-
-
-
-
-
-
+    print(f"""Succes!
+          MSE({estimator}) = {round(mse_hat,8)}
+          MSE(base) = {round(mse_hat_base,8)}
+          """)
 

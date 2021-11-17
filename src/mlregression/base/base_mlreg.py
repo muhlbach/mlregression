@@ -2,14 +2,18 @@
 # Libraries
 #------------------------------------------------------------------------------
 # Standard
+from sklearnex import patch_sklearn
+patch_sklearn()
 from abc import ABC, abstractmethod
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, KFold, TimeSeriesSplit
+from sklearn.model_selection import ParameterSampler, GridSearchCV, RandomizedSearchCV, KFold, TimeSeriesSplit
 
 
 # User
-from ..utils.tools import SingleSplit, remove_conditionally_invalid_keys,unlist_dict_values
+from ..utils.tools import (SingleSplit,
+                           remove_conditionally_invalid_keys,
+                           unlist_dict_values, get_unique_elements_from_list)
 from ..utils.model_params import get_param_grid_from_estimator, compose_model, update_params
 from ..utils.sanity_check import check_param_grid, check_X_Y, check_X, check_estimator
 from ..utils.exceptions import WrongInputException
@@ -32,10 +36,9 @@ class BaseMLRegressor(object):
                             'refit':True,
                             'verbose':0,
                             'pre_dispatch':'2*n_jobs',
-                            'random_state':None,
                             'error_score':np.nan,
                             'return_train_score':False},
-                 n_folds=3,
+                 n_folds=5,
                  test_size=None,
                  fold_type="KFold",
                  max_n_models=50,
@@ -65,30 +68,12 @@ class BaseMLRegressor(object):
         # ---------------------------------------------------------------------
         # Parameters
         # ---------------------------------------------------------------------
-        # Obtain parameters if not provided
-        if self.param_grid is None:
-            self.param_grid = get_param_grid_from_estimator(estimator=self.estimator)
-        
-        # Add default parameters if for some reason not specified    
-        self.param_grid = update_params(old_param=self.estimator.get_params(),
-                                        new_param=self.param_grid)
-        
-        # Remove invalid keys
-        self.param_grid = remove_conditionally_invalid_keys(d=self.param_grid,
-                                                            invalid_values=["deprecated"])
-        
-        # Set param_grid values to list if not already list
-        self.param_grid = {k: list(set(v)) if isinstance(v, list) else v.tolist() if isinstance(v, np.ndarray) else [v] for k, v in self.param_grid.items()}
-
-        # Check parameter grid
-        check_param_grid(self.param_grid)
+        self.param_grid = self._fix_params(estimator=self.estimator,
+                                           param_grid=self.param_grid)
 
         # ---------------------------------------------------------------------
         # Misc
         # ---------------------------------------------------------------------
-        # Compute number of models
-        self.n_models = np.prod(np.array([len(v) for k,v in self.param_grid.items()]))
-
         # Define data splitter used in cross validation
         self.splitter = self._choose_splitter(n_folds=self.n_folds, fold_type=self.fold_type, test_size=self.test_size)
             
@@ -97,7 +82,6 @@ class BaseMLRegressor(object):
                                                    param_grid=self.param_grid,
                                                    cv_params=self.cv_params,                                                   
                                                    splitter=self.splitter,
-                                                   n_models=self.n_models,
                                                    max_n_models=self.max_n_models)
            
 
@@ -117,6 +101,32 @@ class BaseMLRegressor(object):
     # -------------------------------------------------------------------------
     # Private functions
     # -------------------------------------------------------------------------
+    def _fix_params(self, estimator, param_grid):
+        """ Fix parameters, including get parameters if not provided, remove invalids, convert to list, and remove duplicates"""
+        
+        # Obtain parameters if not provided
+        if param_grid is None:
+            param_grid = get_param_grid_from_estimator(estimator=estimator)
+                
+        # Add default parameters if for some reason not specified    
+        param_grid = update_params(old_param=estimator.get_params(),
+                                        new_param=param_grid)
+        
+        # Remove invalid keys
+        param_grid = remove_conditionally_invalid_keys(d=param_grid,
+                                                       invalid_values=["deprecated"])
+                
+        # Set param_grid values to list if not already list
+        param_grid = {k: v if isinstance(v, list) else v.tolist() if isinstance(v, np.ndarray) else [v] for k, v in param_grid.items()}
+
+        # Remove duplicates
+        param_grid = {k: get_unique_elements_from_list(l=v,keep_order=True) for k,v in param_grid.items()}
+        
+        # Check parameter grid
+        check_param_grid(param_grid)
+        
+        return param_grid
+        
     def _choose_splitter(self, n_folds=2, fold_type="KFold", test_size=0.25):
         """ Define the split function that splits the data for cross-validation"""
         if n_folds==1:
@@ -144,7 +154,7 @@ class BaseMLRegressor(object):
         
         return splitter
         
-    def _choose_estimator(self, estimator, param_grid, cv_params, splitter, n_models, max_n_models):
+    def _choose_estimator(self, estimator, param_grid, cv_params, splitter, max_n_models):
         """
         Choose between grid search or randomized search, or simply the estimator if only one parametrization is provided.
         Note that if the estimator ends with "CV", we assume it has a native implementation as in scikit-learn. We use that in this case.
@@ -169,18 +179,37 @@ class BaseMLRegressor(object):
             estimator_cv.set_params(**param_grid)
             
         else:
+            # Compute number of models
+            n_models = np.prod(np.array([len(v) for k,v in param_grid.items()]))
+                        
             if n_models>1:            
+                
                 if n_models>max_n_models:
-                    estimator_cv = RandomizedSearchCV(estimator=estimator,
-                                                      param_distributions=param_grid,
-                                                      cv=splitter,
-                                                      n_iter=max_n_models,
-                                                      **cv_params)
-                else:
-                    estimator_cv = GridSearchCV(estimator=estimator,
-                                                param_grid=param_grid,
-                                                cv=splitter,
-                                                **cv_params)
+                    
+                    # max_n_models=3
+                    # param_grid={"a":[0,"aaa",2,3],
+                    #             "b":["a0a","bbb",5,6]}
+                                        
+                    # Select (max_n_models-1) combinations of parameters AND add default (being the first parameter)
+                    self.param_sampled = list(ParameterSampler(param_distributions=param_grid,
+                                                          n_iter=max_n_models-1))
+
+                    self.param_default = {k: param_grid.get(k,None)[0] for k in param_grid.keys()}                    
+                    
+                    # Combine lists of dicts
+                    param_grid = [self.param_default]+self.param_sampled
+                    
+                    # Listify all values in dicts
+                    param_grid = [{k:[v] for k,v in l.items()} for l in param_grid]
+                    
+                    # Convert to dict of lists
+                    # param_grid = pd.DataFrame(param_grid).to_dict('list')
+                    
+                # Grid search over all parameters provided (sampled or not)    
+                estimator_cv = GridSearchCV(estimator=estimator,
+                                            param_grid=param_grid,
+                                            cv=splitter,
+                                            **cv_params)
             
             else:
                 # If param_grid leads to one single model (n_models==1), there's no need to set of cross validation. In this case, just initialize the model and set parameters

@@ -79,6 +79,17 @@ def unlist_dict_values(d):
     
     return d
     
+def get_unique_elements_from_list(l, keep_order=True):
+    
+    if keep_order:    
+        seen = set()
+        l_unique = [x for x in l if not (x in seen or seen.add(x))]
+    else:
+        l_unique = list(set(l))
+        
+    return l_unique
+
+
 
 #------------------------------------------------------------------------------
 # Save and load models

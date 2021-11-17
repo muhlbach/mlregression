@@ -180,7 +180,7 @@ def get_param_grid_from_estimator(estimator):
         
     elif isinstance_double(estimator, ensemble.ExtraTreesRegressor):
         param_grid = {
-            "n_estimators":500,                                                # Default 100 
+            "n_estimators":200,                                                # Default 100
             'criterion':'squared_error',
             'max_depth':[None,2,4,8,16],
             'min_samples_split':[2,4,8,16],
@@ -219,13 +219,13 @@ def get_param_grid_from_estimator(estimator):
         
     elif isinstance_double(estimator, ensemble.RandomForestRegressor):
         param_grid = {
-            "n_estimators":500,                                                # Default 100 
+            "n_estimators":200,                                                # Default 100
             "criterion":'squared_error',
             "max_depth":[None,2,4,8,16],
             "min_samples_split":[2,4,8,16],
             "min_samples_leaf":[1,2,4,8],
             "min_weight_fraction_leaf":0.0,
-            "max_features":['sqrt',1/4,1/3,1/2,2/3,'log2','auto'],             # Default 'auto'
+            "max_features":['sqrt',1/4,1/3,1/2,2/3,'log2','auto'],             # Default 'auto'    
             "max_leaf_nodes":None,
             "min_impurity_decrease":0.0,
             "bootstrap":True,
@@ -234,7 +234,7 @@ def get_param_grid_from_estimator(estimator):
             "random_state":None,
             "verbose":0,
             "warm_start":False,
-            "ccp_alpha":0.0,
+            # "ccp_alpha":0.0, # Leads to RuntimeError: Cannot clone object RandomForestRegressor(...), as the constructor either does not set or modifies parameter ccp_alpha
             "max_samples":None
             }
 
