@@ -1,4 +1,7 @@
 
+# *** ATTENTION ***
+Don't immidiately run `pip install mlregression`. See Section _Installation_.
+
 # Machine learning regression (mlregression)
 
 Machine Learning Regression (mlregrresion) is an off-the-shelf implementation of the most popular ML methods that automatically takes care of fitting and parameter tuning.
@@ -19,20 +22,25 @@ Author: Nicolaj Søndergaard Mühlbach (n.muhlbach at gmail dot com, muhlbach at
 ## Code dependencies
 This code has the following dependencies:
 
-- Python 3.6+
-- numpy 1.19+
-- pandas 1.3+
-- scikit-learn 1+
-- scikit-learn-intelex 2021+
-- xgboost 1.3+
-- lightgbm 3.2+
+- Python >=3.6
+- numpy >=1.19
+- pandas >=1.3
+- scikit-learn >=1
+- scikit-learn-intelex >= 2021.3
+- daal >= 2021.3
+- daal4py >= 2021.3
+- tbb >= 2021.4
+- xgboost >=1.3
+- lightgbm >=3.2
+
 
 ## Installation
 Before calling `pip install mlregression`, we recommend using `conda` to install the dependencies. In our experience, calling the following command works like a charm:
 ```
-conda install -c conda-forge pandas">=1.3" numpy">=1.19" scikit-learn">=1" scikit-learn-intelex">=2021.3" daal">=2021.3" daal4py">=2021.3" tbb">=2021.4" xgboost">=1.3" lightgbm">=3.2" --force-reinstall
+conda install -c conda-forge numpy">=1.19" pandas">=1.3" scikit-learn">=1" scikit-learn-intelex">=2021.3" daal">=2021.3" daal4py">=2021.3" tbb">=2021.4" xgboost">=1.3" lightgbm">=3.2" --force-reinstall
 ```
 After this, install `mlregression` by calling `pip install mlregression`.
+Note that without installing the dependensies, the package will not work. As of now, it does not work when installing the dependensies via `pip install`. The reason is that we are using the Intel® Extension for Scikit-learn to massively speed up computations, but the dependensies are not properly installed via `pip install`.
 
 ## Usage
 We demonstrate the use of __mlregression__ below, using random forests, xgboost, and lightGBM as underlying regressors.
