@@ -7,8 +7,6 @@ from sklearn.model_selection import train_test_split
 
 # This library
 from mlregression.mlreg import MLRegressor
-from mlregression.mlreg import RF
-from mlregression.estimator.boosting import XGBRegressor, LGBMegressor
 
 #------------------------------------------------------------------------------
 # Data
@@ -25,10 +23,24 @@ X, y = make_regression(n_samples=500,
 X_train, X_test, y_train, y_test = train_test_split(X, y)
 
 #------------------------------------------------------------------------------
-# Example 1: Main use of MLRegressor
+# Example 1: Prediction
 #------------------------------------------------------------------------------
-# Instantiate model and specify the underlying regressor by a string
-mlreg = MLRegressor(estimator="RandomForestRegressor",
+# Specify any of the following estimators:
+"""
+"LinearRegression",
+"RidgeCV", "LassoCV", "ElasticNetCV",
+"RandomForestRegressor","ExtraTreesRegressor", "GradientBoostingRegressor",
+"XGBRegressor", "LGBMegressor",
+"MLPRegressor",
+"""
+
+# For instance, pick "RandomForestRegressor"
+estimator = "RandomForestRegressor"
+# Note that the 'estimator' may also be an instance of a class, e.g., RandomForestRegressor(), conditional on being imported first, e.g. from sklearn.ensemble import RandomForestRegressor
+
+# Instantiate model and choose the number of parametrizations to examine using cross-validation ('max_n_models') and the number of cross-validation folds ('n_cv_folds')
+mlreg = MLRegressor(estimator=estimator,
+                    n_cv_folds=5,
                     max_n_models=2)
 
 # Fit
@@ -45,64 +57,19 @@ mlreg.best_estimator_
 mlreg.score(X=X_test,y=y_test)
 
 #------------------------------------------------------------------------------
-# Example 2: Linear regression
+# Example 2: Cross-fitting
 #------------------------------------------------------------------------------
-# Instantiate model
-ols = MLRegressor(estimator="LinearRegression")
+# Instantiate model and choose the number of parametrizations to examine using cross-validation ('max_n_models'), the number of cross-validation folds ('n_cv_folds'), AND the number of cross-fitting folds ('n_cf_folds')
+mlreg = MLRegressor(estimator=estimator,
+                    n_cv_folds=5,
+                    max_n_models=2,
+                    n_cf_folds=2)
 
-# Fit
-ols.fit(X=X_train, y=y_train)
+# Cross fit
+mlreg.cross_fit(X=X_train, y=y_train)
 
-# Predict and score
-ols.score(X=X_test, y=y_test)
+# Extract in-sample that are estimated in an out-of-sample way (e.g., via cross-fitting)
+y_hat = mlreg.y_pred_cf_
 
-#------------------------------------------------------------------------------
-# Example 3: XGBoost
-#------------------------------------------------------------------------------
-# Instantiate model
-xgb = MLRegressor(estimator="XGBRegressor",
-                  max_n_models=2)
-
-# Fit
-xgb.fit(X=X_train, y=y_train)
-
-# Predict and score
-xgb.score(X=X_test, y=y_test)
-
-#------------------------------------------------------------------------------
-# Example 4: LightGBM
-#------------------------------------------------------------------------------
-# Instantiate model
-lgbm = MLRegressor(estimator="LGBMegressor",
-                  max_n_models=2)
-
-# Fit
-lgbm.fit(X=X_train, y=y_train)
-
-# Predict and score
-lgbm.score(X=X_test, y=y_test)
-
-#------------------------------------------------------------------------------
-# Example 5: Neural Nets
-#------------------------------------------------------------------------------
-# Instantiate model
-nn = MLRegressor(estimator="MLPRegressor",
-                  max_n_models=2)
-
-# Fit
-nn.fit(X=X_train, y=y_train)
-
-# Predict and score
-nn.score(X=X_test, y=y_test)
-
-#------------------------------------------------------------------------------
-# Example 6: LassoCV/RidgeCV/ElasticNetCV (native scikit-learn implementation)
-#------------------------------------------------------------------------------
-# Instantiate model
-penalized = MLRegressor(estimator="LassoCV")
-
-# Fit
-penalized.fit(X=X_train, y=y_train)
-
-# Predict and score
-penalized.score(X=X_test, y=y_test)
+# Likewise, extract the residualized outcomes used in e.g., double machine learning. This is \tilde{Y} = Y - E[Y|X=x]
+y_res = mlreg.y_res_cf_
