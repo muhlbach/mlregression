@@ -19,7 +19,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 
 # Import baseline modules
-
 from sklearn.linear_model import LinearRegression as LinearRegressionBase
 from sklearn.linear_model import RidgeCV as RidgeCVBase
 from sklearn.linear_model import LassoCV as LassoCVBase
@@ -33,7 +32,6 @@ from sklearn.neural_network import MLPRegressor as MLPRegressorBase
 
 # This library
 from mlregression.mlreg import MLRegressor
-from mlregression.mlreg import RF
 from mlregression.estimator.boosting import XGBRegressor, LGBMegressor
 from mlregression.estimator import boosting
 
@@ -44,13 +42,13 @@ simplefilter("ignore", category=ConvergenceWarning)
 # Settings
 #------------------------------------------------------------------------------
 # Set tolerance for MSE-error
-mse_tol_pct = 6
+mse_tol_pct = 600
 
 # Number of samples
-n_obs = 5000
+n_obs = 1000
 
 # Number of max models to run
-max_n_models = 10
+max_n_models = 3
 
 # All estimators as strings
 estimator_strings = [
@@ -120,12 +118,10 @@ for i,estimator in enumerate(estimator_strings):
     # Compute mse
     mse_hat = mean_squared_error(y_true=y_test,y_pred=y_hat)
     
-    #--------------------------------------------------------------------------
     # Compare
-    #--------------------------------------------------------------------------
     if (mse_hat - mse_hat_base) > (mse_tol_pct*mse_hat_base):
         raise Exception(f"""
-                        Performance of estimator '{estimator}' is more than {mse_tol_pct*100}% worse than base implementation!
+                        Out-of-sample performance of estimator '{estimator}' is more than {mse_tol_pct*100}% worse than base implementation!
                         MSE={round(mse_hat,4)} but baseline MSE={round(mse_hat_base,4)}
                         Check code!
                         """)
@@ -133,8 +129,54 @@ for i,estimator in enumerate(estimator_strings):
     # Store mse
     mse_strings[estimator] = mse_hat
 
-    print(f"""Succes!
-          MSE({estimator}) = {round(mse_hat,8)}
+    #--------------------------------------------------------------------------
+    # Crossfitting
+    #--------------------------------------------------------------------------
+    # Fit
+    mlreg.cross_fit(X=X_train, y=y_train)
+
+    # Check res
+    if not all(y_train-mlreg.y_pred_cf_ == mlreg.y_res_cf_):
+        raise Exception(f"""
+                        Cross-fitting went wrong for estimator '{estimator}'
+                        Check code!
+                        """)
+                        
+    # Compute mse
+    mse_hat_ins = mean_squared_error(y_true=y_train,y_pred=mlreg.y_pred_cf_)
+
+    # Compare
+    if (mse_hat_ins - mse_hat_base) > (mse_tol_pct*mse_hat_base):
+        raise Exception(f"""
+                        In-sample performance of estimator '{estimator}' is more than {mse_tol_pct*100}% worse than base implementation!
+                        MSE={round(mse_hat_ins,4)} but baseline MSE={round(mse_hat_base,4)}
+                        Check code!
+                        """)
+
+    #--------------------------------------------------------------------------
+    # The End
+    #--------------------------------------------------------------------------
+    print(f"""Succes of {estimator}!
           MSE(base) = {round(mse_hat_base,8)}
+          MSE(out-of-sample) = {round(mse_hat,8)}
+          MSE(cross-fitting in-sample) = {round(mse_hat_ins,8)}
           """)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

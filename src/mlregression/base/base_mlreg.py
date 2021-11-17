@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import ParameterSampler, GridSearchCV, RandomizedSearchCV, KFold, TimeSeriesSplit
-
+from copy import deepcopy
 
 # User
 from ..utils.tools import (SingleSplit,
@@ -38,20 +38,24 @@ class BaseMLRegressor(object):
                             'pre_dispatch':'2*n_jobs',
                             'error_score':np.nan,
                             'return_train_score':False},
-                 n_folds=5,
-                 test_size=None,
                  fold_type="KFold",
+                 n_cv_folds=5,
+                 shuffle=False,
+                 test_size=None,
                  max_n_models=50,
+                 n_cf_folds=2,
                  verbose=False,
                  ):
         # Initialize inputs
         self.estimator = estimator
         self.param_grid = param_grid
         self.cv_params = cv_params
-        self.n_folds = n_folds
+        self.n_cv_folds = n_cv_folds
+        self.shuffle = shuffle
         self.test_size = test_size
         self.fold_type = fold_type
         self.max_n_models = max_n_models
+        self.n_cf_folds = n_cf_folds
         self.verbose = verbose
 
         # ---------------------------------------------------------------------
@@ -75,7 +79,10 @@ class BaseMLRegressor(object):
         # Misc
         # ---------------------------------------------------------------------
         # Define data splitter used in cross validation
-        self.splitter = self._choose_splitter(n_folds=self.n_folds, fold_type=self.fold_type, test_size=self.test_size)
+        self.splitter = self._choose_splitter(n_folds=self.n_cv_folds,
+                                              fold_type=self.fold_type,
+                                              shuffle=self.shuffle,
+                                              test_size=self.test_size)
             
         # Define cross-validated estimator
         self.estimator_cv = self._choose_estimator(estimator=self.estimator,
@@ -88,7 +95,7 @@ class BaseMLRegressor(object):
     # -------------------------------------------------------------------------
     # Class variables
     # -------------------------------------------------------------------------
-    FOLD_TYPE_ALLOWED = ["KFold", "TimeSeriesSplit"]
+    FOLD_TYPE_ALLOWED = ["KFold", "TimeSeriesSplit", "SingleSplit"]
     N_FOLDS_ALLOWED = [1, 2, "...", "N"]
 
     # -------------------------------------------------------------------------
@@ -127,7 +134,7 @@ class BaseMLRegressor(object):
         
         return param_grid
         
-    def _choose_splitter(self, n_folds=2, fold_type="KFold", test_size=0.25):
+    def _choose_splitter(self, n_folds=2, fold_type="KFold", shuffle=True, test_size=0.25):
         """ Define the split function that splits the data for cross-validation"""
         if n_folds==1:
             if test_size is None:
@@ -140,7 +147,7 @@ class BaseMLRegressor(object):
             
         elif n_folds>=2:
             if fold_type=="KFold":
-                splitter = KFold(n_splits=n_folds, random_state=None, shuffle=False)
+                splitter = KFold(n_splits=n_folds, random_state=None, shuffle=shuffle)
             elif fold_type=="TimeSeriesSplit":
                 splitter = TimeSeriesSplit(n_splits=n_folds, max_train_size=None, test_size=None, gap=0)
             else:
@@ -265,13 +272,45 @@ class BaseMLRegressor(object):
     def set_params(self,**params):
         self.estimator_cv.set_params(**params)
 
+    def cross_fit(self,X,y,shuffle=False):
+        
+        # Check X and Y
+        X, y = check_X_Y(X, y)
+
+        # Split into folds
+        k_folds = KFold(n_splits=self.n_cf_folds, shuffle=shuffle)
+        
+        # Pre-allocate indices for the TEST set
+        self.indices_ = np.zeros_like(a=y)
+        self.y_pred_cf_ = np.zeros_like(a=y)
+        
+        for i,(train_index, test_index) in enumerate(k_folds.split(X)):
+            
+            # Increase cnt
+            i += 1
+            
+            print(f"Cross-fitting fold {i}/{self.n_cf_folds}")
+            
+            # Fill indices
+            self.indices_[test_index] = i
+
+            # Copy estimator
+            estimator_cf = deepcopy(self.estimator_cv)
+
+            # Fit model using train indices
+            estimator_cf.fit(X=X[train_index],
+                             y=y[train_index])
+        
+            # Predict using test indices
+            self.y_pred_cf_[test_index] = estimator_cf.predict(X=X[test_index])
     
+            # Store estimator as attr
+            setattr(self,f"estimator_{i}",estimator_cf)
     
+        # Compute residuals
+        self.y_res_cf_ = y - self.y_pred_cf_
     
-    
-    
-    
-    
+        return self
     
     
         

@@ -50,7 +50,7 @@ def check_X(X):
     # Convert to dataframe if not already converted
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)
-    
+
     # Check for numeric dtype
     if not all(X.dtypes.map(pd.api.types.is_numeric_dtype)):
         raise Exception("X must be only numeric dtype")
@@ -58,6 +58,9 @@ def check_X(X):
     # Check for missing
     if X.isnull().values.any():
         raise Exception("X contains missing inputs")
+        
+    # Convert back to np.array
+    X = np.array(X)
         
     return X
                 
@@ -74,7 +77,10 @@ def check_Y(Y):
     # Check for missing
     if Y.isnull().values.any():
         raise Exception("Y contains missing inputs")        
-        
+    
+    # Convert back to np.array
+    Y = np.array(Y)    
+    
     return Y
         
 def check_X_Y(X, Y):
