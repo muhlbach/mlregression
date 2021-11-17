@@ -27,6 +27,13 @@ This code has the following dependencies:
 - xgboost 1.3+
 - lightgbm 3.2+
 
+## Installation
+Before calling `pip install mlregression`, we recommend using `conda` to install the dependencies. In our experience, calling the following command works like a charm:
+```
+conda install -c conda-forge pandas">=1.3" numpy">=1.19" scikit-learn">=1" scikit-learn-intelex">=2021.3" daal">=2021.3" daal4py">=2021.3" tbb">=2021.4" xgboost">=1.3" lightgbm">=3.2" --force-reinstall
+```
+After this, install `mlregression` by calling `pip install mlregression`.
+
 ## Usage
 We demonstrate the use of __mlregression__ below, using random forests, xgboost, and lightGBM as underlying regressors.
 
