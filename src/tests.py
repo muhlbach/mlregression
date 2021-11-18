@@ -2,7 +2,7 @@
 This script implements some basic tests of the package that should be run before uploading
 """
 #------------------------------------------------------------------------------
-# BETA
+# Run interactively
 #------------------------------------------------------------------------------
 # import os
 # # Manually set path of current file
@@ -13,6 +13,7 @@ This script implements some basic tests of the package that should be run before
 # Libraries
 #------------------------------------------------------------------------------
 # Standard
+import time, random
 import numpy as np
 from sklearn.datasets import make_regression
 from sklearn.model_selection import train_test_split
@@ -58,6 +59,12 @@ estimator_strings = [
     "XGBRegressor", "LGBMegressor",
     "MLPRegressor",
     ]
+
+# Start timer
+t0 = time.time()
+
+# Set seed
+random.seed(1991)
 
 #------------------------------------------------------------------------------
 # Data
@@ -162,7 +169,13 @@ for i,estimator in enumerate(estimator_strings):
           MSE(cross-fitting in-sample) = {round(mse_hat_ins,8)}
           """)
 
+# Stop timer
+t1 = time.time()
 
+#------------------------------------------------------------------------------
+# The End
+#------------------------------------------------------------------------------
+print(f"""**************************************************\nCode finished in {np.round(t1-t0, 1)} seconds\n**************************************************""")
 
 
 

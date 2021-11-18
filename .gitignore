@@ -1,8 +1,8 @@
-# Byte-compiled / optimized / DLL files
 # Misc
 .pypirc
 **/.DS_Store
 
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class

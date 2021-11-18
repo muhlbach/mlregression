@@ -7,7 +7,7 @@ patch_sklearn()
 from abc import ABC, abstractmethod
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import ParameterSampler, GridSearchCV, RandomizedSearchCV, KFold, TimeSeriesSplit
+from sklearn.model_selection import ParameterSampler, GridSearchCV, KFold, TimeSeriesSplit
 from copy import deepcopy
 
 # User
@@ -43,7 +43,7 @@ class BaseMLRegressor(object):
                  shuffle=False,
                  test_size=None,
                  max_n_models=50,
-                 n_cf_folds=2,
+                 n_cf_folds=None,
                  verbose=False,
                  ):
         # Initialize inputs
@@ -136,7 +136,7 @@ class BaseMLRegressor(object):
         
     def _choose_splitter(self, n_folds=2, fold_type="KFold", shuffle=True, test_size=0.25):
         """ Define the split function that splits the data for cross-validation"""
-        if n_folds==1:
+        if (n_folds==1) or (fold_type=="SingleSplit"):
             if test_size is None:
                 raise Exception("""
                                 When 'n_folds==1', we automatically instantiate a SingleSplit.
@@ -276,6 +276,13 @@ class BaseMLRegressor(object):
         
         # Check X and Y
         X, y = check_X_Y(X, y)
+
+        # Check n_cf_folds
+        if self.n_cf_folds is None:
+            raise Exception("""
+                            When calling 'cross_fit()', one has to intentionally provide 'n_cf_folds' in the __init__
+                            That is, 'n_cf_folds' is required to be an integer and not 'None'
+                            """)     
 
         # Split into folds
         k_folds = KFold(n_splits=self.n_cf_folds, shuffle=shuffle)
