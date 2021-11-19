@@ -11,9 +11,10 @@ Currently, the __fully__ implemented models include:
 - Penalized regression (Ridge, Lasso, ElasticNet, Lars, LassoLars) 
 - Neural nets (Simple neural nets with 1-5 hidden layers, rely activation, and early stopping)
 
-_NB!_ When using penalized regressions, consider using the native CV-implementation from scikit-learn for speed. See Example 6 below.
+_NB!_ When using penalized regressions, consider using the native CV-implementation from scikit-learn for speed, e.g., simply set `estimator="LassoCV"` similar to Example 1.
 
-In addition, all scikit-learn regressors can be supplied (e.g., LinearRegression, HuberRegressor, or BayesianRidge), but then one has to provide a parameter grid as well!
+Scikit-learn regressors (together with `XGBoost` and `LightGBM`) can be estimated by setting the `estimator`-argument equal to the name (string) as in Example 1 (`estimator="RandomForestRegressor"`).
+Alternatively, one can provide an instance of an estimator, e.g., `estimator=RandomForestRegressor()`. Again, this is fully automated for most Scikit-learn regressors, but for non-standard methods, one would have to provide a parameter grid as well, e.g., `param_grid={...}`.
 
 Please contact the authors below if you find any bugs or have any suggestions for improvement. Thank you!
 
