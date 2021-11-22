@@ -114,14 +114,14 @@ class BaseMLRegressor(object):
         # Obtain parameters if not provided
         if param_grid is None:
             param_grid = get_param_grid_from_estimator(estimator=estimator)
-                
+                        
         # Add default parameters if for some reason not specified    
         param_grid = update_params(old_param=estimator.get_params(),
                                         new_param=param_grid)
         
         # Remove invalid keys
         param_grid = remove_conditionally_invalid_keys(d=param_grid,
-                                                       invalid_values=["deprecated"])
+                                                        invalid_values=["deprecated"])
                 
         # Set param_grid values to list if not already list
         param_grid = {k: v if isinstance(v, list) else v.tolist() if isinstance(v, np.ndarray) else [v] for k, v in param_grid.items()}

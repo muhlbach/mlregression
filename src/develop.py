@@ -20,15 +20,23 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 
 # Import baseline modules
+from sklearn.dummy import DummyRegressor as DummyRegressorBase
 from sklearn.linear_model import LinearRegression as LinearRegressionBase
+from sklearn.linear_model import Ridge as RidgeBase
+from sklearn.linear_model import Lasso as LassoBase
+from sklearn.linear_model import ElasticNet as ElasticNetBase
+
 from sklearn.linear_model import RidgeCV as RidgeCVBase
 from sklearn.linear_model import LassoCV as LassoCVBase
 from sklearn.linear_model import ElasticNetCV as ElasticNetCVBase
+
 from sklearn.ensemble import RandomForestRegressor as RandomForestRegressorBase
 from sklearn.ensemble import ExtraTreesRegressor as ExtraTreesRegressorBase
 from sklearn.ensemble import GradientBoostingRegressor as GradientBoostingRegressorBase
+
 from xgboost import XGBRegressor as XGBRegressorBase
 from lightgbm import LGBMRegressor as LGBMegressorBase
+
 from sklearn.neural_network import MLPRegressor as MLPRegressorBase
 
 # This library
@@ -51,12 +59,16 @@ n_obs = 1000
 # Number of max models to run
 max_n_models = 3
 
+# "Ridge", "Lasso", "ElasticNet",
+
 # All estimators as strings
 estimator_strings = [
-    "LinearRegression",
-    "RidgeCV", "LassoCV", "ElasticNetCV",
-    "RandomForestRegressor","ExtraTreesRegressor", "GradientBoostingRegressor",
     "XGBRegressor", "LGBMegressor",
+    "DummyRegressor",
+    "RandomForestRegressor","ExtraTreesRegressor", "GradientBoostingRegressor",
+    "LinearRegression",
+    "Ridge", "Lasso", "ElasticNet",
+    "RidgeCV", "LassoCV", "ElasticNetCV",
     "MLPRegressor",
     ]
 
@@ -89,7 +101,7 @@ print("""
       *************************************************************************
       """)
 
-estimator="RandomForestRegressor"
+estimator="Lasso"
 mse_strings = {}
 for i,estimator in enumerate(estimator_strings):
     print(f"""\nTesting {estimator} ~ {i+1}/{len(estimator_strings)}""")

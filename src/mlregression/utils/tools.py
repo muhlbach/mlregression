@@ -2,6 +2,7 @@
 # Libraries
 #------------------------------------------------------------------------------
 # Standard
+import pandas as pd
 import numpy as np
 import pickle
 from sklearn.utils import indexable
@@ -24,19 +25,20 @@ def break_links(x):
 def isin(pattern, x, how="all", return_element_wise=True):
     """Check if any of the elements in 'pattern' is included in 'x'"""
     ALLOWED_HOW = ["all", "any"]
-    ITERABLES = (list, tuple)
+    
+    # List iterable classes. Note that we cannot rely on __iter__ attribute, because then str will be iterable!
+    ITERABLES = (list, tuple, np.ndarray, pd.Series)
     
     if how not in ALLOWED_HOW:
         raise WrongInputException(input_name="how",
                                   provided_input=how,
                                   allowed_inputs=ALLOWED_HOW)
-
+        
     if not isinstance(x, ITERABLES):
         if how=="all":
             is_in = all(p == x for p in pattern)
         elif how=="any":
             is_in = any(p == x for p in pattern)
-
     else:
         is_in = [isin(pattern, x=y, how=how) for y in x]
         
@@ -48,7 +50,7 @@ def isin(pattern, x, how="all", return_element_wise=True):
 def remove_conditionally_invalid_keys(d, invalid_values=["deprecated"]):
     """ Remove keys from dictionary for which values contain specified values"""
     d = {k:v for k,v in d.items() if not isin(pattern=invalid_values,x=v,how="any",return_element_wise=False)}
-    
+        
     return d
 
 def remove_invalid_attr(obj, invalid_attr):

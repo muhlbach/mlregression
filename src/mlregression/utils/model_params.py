@@ -164,9 +164,7 @@ def get_param_grid_from_estimator(estimator):
     #--------------------------------------------------------------------------
     elif isinstance_double(estimator, dummy.DummyRegressor):
         param_grid = {
-            "strategy":["mean","median","quantile","constant"],
-            "constant":None,
-            "quantile":None
+            "strategy":["mean","median"],
             }
 
     #--------------------------------------------------------------------------
@@ -278,7 +276,6 @@ def get_param_grid_from_estimator(estimator):
             'max_iter':None,
             'tol':0.001,
             'solver':'auto',
-            'positive':False,
             'random_state':None
             }
         
