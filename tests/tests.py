@@ -11,21 +11,24 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 
 # Import baseline modules
+from sklearn.dummy import DummyRegressor as DummyRegressorBase
 from sklearn.linear_model import LinearRegression as LinearRegressionBase
+from sklearn.linear_model import Ridge as RidgeBase
+from sklearn.linear_model import Lasso as LassoBase
+from sklearn.linear_model import ElasticNet as ElasticNetBase
 from sklearn.linear_model import RidgeCV as RidgeCVBase
 from sklearn.linear_model import LassoCV as LassoCVBase
 from sklearn.linear_model import ElasticNetCV as ElasticNetCVBase
 from sklearn.ensemble import RandomForestRegressor as RandomForestRegressorBase
 from sklearn.ensemble import ExtraTreesRegressor as ExtraTreesRegressorBase
 from sklearn.ensemble import GradientBoostingRegressor as GradientBoostingRegressorBase
+from sklearn.neural_network import MLPRegressor as MLPRegressorBase
 from xgboost import XGBRegressor as XGBRegressorBase
 from lightgbm import LGBMRegressor as LGBMegressorBase
-from sklearn.neural_network import MLPRegressor as MLPRegressorBase
 
 # This library
 from mlregression.mlreg import MLRegressor
 from mlregression.estimator.boosting import XGBRegressor, LGBMegressor
-from mlregression.estimator import boosting
 
 from warnings import simplefilter
 from sklearn.exceptions import ConvergenceWarning
@@ -44,10 +47,12 @@ max_n_models = 3
 
 # All estimators as strings
 estimator_strings = [
-    "LinearRegression",
-    "RidgeCV", "LassoCV", "ElasticNetCV",
+    # "XGBRegressor", "LGBMegressor",
+    "DummyRegressor",
     "RandomForestRegressor","ExtraTreesRegressor", "GradientBoostingRegressor",
-    "XGBRegressor", "LGBMegressor",
+    "LinearRegression",
+    "Ridge", "Lasso", "ElasticNet",
+    "RidgeCV", "LassoCV", "ElasticNetCV",
     "MLPRegressor",
     ]
 
