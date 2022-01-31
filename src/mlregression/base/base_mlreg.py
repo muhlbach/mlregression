@@ -9,9 +9,11 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import ParameterSampler, GridSearchCV, KFold, TimeSeriesSplit
 from copy import deepcopy
+import inspect
 
 # User
 from ..utils.tools import (SingleSplit,
+                           isin,
                            remove_conditionally_invalid_keys,
                            unlist_dict_values, get_unique_elements_from_list)
 from ..utils.model_params import get_param_grid_from_estimator, compose_model, update_params
@@ -61,6 +63,8 @@ class BaseMLRegressor(object):
         # ---------------------------------------------------------------------
         # Estimator
         # ---------------------------------------------------------------------
+        """This instantiates the estimator as self.estimator"""
+        
         # Check estimator type
         if isinstance(self.estimator, str):
             self.estimator = compose_model(estimator_name=self.estimator,
@@ -68,7 +72,7 @@ class BaseMLRegressor(object):
                                            verbose=self.verbose)
         else:
             check_estimator(self.estimator)
-        
+
         # ---------------------------------------------------------------------
         # Parameters
         # ---------------------------------------------------------------------
@@ -111,14 +115,33 @@ class BaseMLRegressor(object):
     def _fix_params(self, estimator, param_grid):
         """ Fix parameters, including get parameters if not provided, remove invalids, convert to list, and remove duplicates"""
         
-        # Obtain parameters if not provided
+        # Obtain default grid parameters if not provided
         if param_grid is None:
             param_grid = get_param_grid_from_estimator(estimator=estimator)
                         
-        # Add default parameters if for some reason not specified    
+        # print(f"\n\n\nparam within fnc1: {param_grid} \n\n")
+        # Add default parameters if for some reason not specified by practitioner
         param_grid = update_params(old_param=estimator.get_params(),
-                                        new_param=param_grid)
+                                   new_param=param_grid)
         
+        # Obtain signature of composed estimator
+        signature = inspect.signature(estimator.__init__)
+
+        # Obtain parameters that was part of __init__
+        init_params = list(signature.parameters.keys())
+                
+        # We require that all parameters are part of initialization
+        if not isin(a=list(param_grid.keys()),
+                    b=init_params,
+                    how="all",
+                    return_element_wise=False):
+            raise Exception(f"""
+                            \nSome parameters are not initialized. Check estimator!
+                            \nInitial parameters: {init_params}
+                            \nParameter grid: {list(param_grid.keys())}
+                            \nMissing parameters: {[set(param_grid.keys())-set(init_params)]}
+                            """)
+                            
         # Remove invalid keys
         param_grid = remove_conditionally_invalid_keys(d=param_grid,
                                                         invalid_values=["deprecated"])

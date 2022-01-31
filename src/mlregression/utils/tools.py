@@ -7,6 +7,7 @@ import numpy as np
 import pickle
 from sklearn.utils import indexable
 from sklearn.utils.validation import _num_samples
+import numbers
 
 # User
 from .exceptions import WrongInputException
@@ -22,34 +23,88 @@ def break_links(x):
     x = x.copy()
     return x
 
-def isin(pattern, x, how="all", return_element_wise=True):
-    """Check if any of the elements in 'pattern' is included in 'x'"""
-    ALLOWED_HOW = ["all", "any"]
+# NEEDS TO BE CHECKED !!!    
+# def isin(pattern, x, how="all", return_element_wise=True):
+#     """Check if any of the elements in 'pattern' is included in 'x'"""
+#     ALLOWED_HOW = ["all", "any"]
     
-    # List iterable classes. Note that we cannot rely on __iter__ attribute, because then str will be iterable!
+#     # List iterable classes. Note that we cannot rely on __iter__ attribute, because then str will be iterable!
+#     ITERABLES = (list, tuple, np.ndarray, pd.Series)
+    
+#     if how not in ALLOWED_HOW:
+#         raise WrongInputException(input_name="how",
+#                                   provided_input=how,
+#                                   allowed_inputs=ALLOWED_HOW)
+        
+#     if not isinstance(x, ITERABLES):
+#         if how=="all":
+#             is_in = all(p == x for p in pattern)
+#         elif how=="any":
+#             is_in = any(p == x for p in pattern)
+#     else:
+#         is_in = [isin(pattern, x=y, how=how) for y in x]
+        
+#         if not return_element_wise:
+#             is_in = any(is_in)
+                
+#     return is_in
+
+def convert_to_list(x):
+    """Convert object "x" to list"""
+    
+    # List non-iterables and iterables. Note that we cannot rely on __iter__ attribute, because then str will be iterable!
+    NON_ITERABLES = (str,numbers.Number)
     ITERABLES = (list, tuple, np.ndarray, pd.Series)
+    
+    if isinstance(x,NON_ITERABLES):
+        x = [x]
+    elif isinstance(x,ITERABLES):
+        x = [i for i in x]
+    else:
+        try:
+            x = [i for i in x]
+        except:
+            x = [x]
+            
+    return x
+
+def isin(a, b, how="all", return_element_wise=True):
+    """Check if any/all of the elements in 'a' is included in 'b'
+    Note: Argument 'how' has NO EFFECT when 'return_element_wise=True'
+    
+    """
+    ALLOWED_HOW = ["all", "any"]
     
     if how not in ALLOWED_HOW:
         raise WrongInputException(input_name="how",
                                   provided_input=how,
                                   allowed_inputs=ALLOWED_HOW)
-        
-    if not isinstance(x, ITERABLES):
-        if how=="all":
-            is_in = all(p == x for p in pattern)
-        elif how=="any":
-            is_in = any(p == x for p in pattern)
+
+    # Convert "a" and "b" to lists
+    a = convert_to_list(x=a)
+    b = convert_to_list(x=b)
+
+    # For each element (x) in a, check if it equals any element (y) in b
+    is_in_temp = [any(x == y for y in b) for x in a]
+
+    if return_element_wise:
+        is_in = is_in_temp
     else:
-        is_in = [isin(pattern, x=y, how=how) for y in x]
-        
-        if not return_element_wise:
-            is_in = any(is_in)
-                
+        # Evaluate if "all" or "any" in found, when we only return one (!) answer
+        if how=="all":
+            is_in = all(is_in_temp)
+        elif how=="any":
+            is_in = any(is_in_temp)
+                    
+    if (len(a)==1) and isinstance(is_in, list):
+        # Grab first and only argument if "a" is not iterable
+        is_in = is_in[0]
+            
     return is_in
 
 def remove_conditionally_invalid_keys(d, invalid_values=["deprecated"]):
-    """ Remove keys from dictionary for which values contain specified values"""
-    d = {k:v for k,v in d.items() if not isin(pattern=invalid_values,x=v,how="any",return_element_wise=False)}
+    """ Remove keys from dictionary for which values contain specified values"""    
+    d = {k:v for k,v in d.items() if not isin(a=invalid_values,b=v,how="any",return_element_wise=False)}
         
     return d
 

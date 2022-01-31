@@ -6,7 +6,7 @@ This script implements some basic tests of the package that should be run before
 #------------------------------------------------------------------------------
 # import os
 # # Manually set path of current file
-# path_to_here = "/Users/muhlbach/Repositories/mlregression/src"
+# path_to_here = "/Users/muhlbach/Desktop/allocation_problems/"
 # # Change path
 # os.chdir(path_to_here)
 #------------------------------------------------------------------------------
@@ -88,6 +88,21 @@ X, y = make_regression(n_samples=n_obs,
 X_train, X_test, y_train, y_test = train_test_split(X, y)
 
 #------------------------------------------------------------------------------
+# [Experimental] Test estimator as object
+#------------------------------------------------------------------------------
+# # Instantiate model
+# mlreg = MLRegressor(estimator=RandomForestRegressorBase(n_estimators=500),
+#                     max_n_models=max_n_models,
+#                     verbose=True)
+
+# # Fit
+# mlreg.fit(X=X_train, y=y_train)
+
+# print("succes")
+# raise Exception()
+
+
+#------------------------------------------------------------------------------
 # Estimator as strings
 #------------------------------------------------------------------------------
 print("""
@@ -96,7 +111,7 @@ print("""
       *************************************************************************
       """)
 
-estimator="Lasso"
+estimator="XGBRegressor"
 mse_strings = {}
 for i,estimator in enumerate(estimator_strings):
     print(f"""\nTesting {estimator} ~ {i+1}/{len(estimator_strings)}""")
@@ -122,10 +137,10 @@ for i,estimator in enumerate(estimator_strings):
     # Instantiate model
     mlreg = MLRegressor(estimator=estimator,
                         max_n_models=max_n_models)
-    
+
     # Fit
     mlreg.fit(X=X_train, y=y_train)
-      
+
     # Predict
     y_hat = mlreg.predict(X=X_test)
 

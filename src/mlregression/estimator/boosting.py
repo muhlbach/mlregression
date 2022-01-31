@@ -6,12 +6,18 @@ import numpy as np
 import xgboost as xgb
 import lightgbm as lgbm
 
+a=xgb.XGBRegressor()
+
+
+
+a.__init__()
+
 #------------------------------------------------------------------------------
 # XGBoost
 #------------------------------------------------------------------------------
 class XGBRegressor(xgb.XGBRegressor):
     """
-    This class copies verbatim the XGBoost regressor
+    This class copies verbatim the XGBoost regressor as of version 1.5.0
     See: https://xgboost.readthedocs.io/en/latest/python/python_api.html#module-xgboost.sklearn
     """
     # -------------------------------------------------------------------------
@@ -45,33 +51,9 @@ class XGBRegressor(xgb.XGBRegressor):
                   importance_type='gain',
                   gpu_id=None,
                   validate_parameters=None,
+                  enable_categorical=False,
+                  predictor=None
                   ):
-        # self.n_estimators=n_estimators                           
-        # self.max_depth=max_depth
-        # self.learning_rate=learning_rate
-        # self.verbosity=verbosity
-        # self.booster=booster
-        # self.tree_method=tree_method
-        # self.n_jobs=n_jobs
-        # self.gamma=gamma
-        # self.min_child_weight=min_child_weight
-        # self.max_delta_step=max_delta_step
-        # self.subsample=subsample
-        # self.colsample_bytree=colsample_bytree
-        # self.colsample_bylevel=colsample_bylevel
-        # self.colsample_bynode=colsample_bynode
-        # self.reg_alpha=reg_alpha
-        # self.reg_lambda=reg_lambda
-        # self.scale_pos_weight=scale_pos_weight
-        # self.base_score=base_score
-        # self.random_state=random_state
-        # self.missing=missing
-        # self.num_parallel_tree=num_parallel_tree
-        # self.monotone_constraints=monotone_constraints
-        # self.interaction_constraints=interaction_constraints
-        # self.importance_type=importance_type
-        # self.gpu_id=gpu_id
-        # self.validate_parameters=validate_parameters
         super().__init__(
             n_estimators=n_estimators,                                             
             max_depth=max_depth,
@@ -98,7 +80,9 @@ class XGBRegressor(xgb.XGBRegressor):
             interaction_constraints=interaction_constraints,
             importance_type=importance_type,
             gpu_id=gpu_id,
-            validate_parameters=validate_parameters
+            validate_parameters=validate_parameters,
+            enable_categorical=enable_categorical,
+            predictor=predictor,
             )
 
 # # Lazy implementation:
@@ -112,7 +96,7 @@ class XGBRegressor(xgb.XGBRegressor):
 #------------------------------------------------------------------------------
 class LGBMegressor(lgbm.LGBMRegressor):
     """
-    This class copies verbatim the LightGBM regressor
+    This class copies verbatim the LightGBM regressor as of version 3.2.1
     See: https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMRegressor.html#lightgbm-lgbmregressor
     """
     # -------------------------------------------------------------------------

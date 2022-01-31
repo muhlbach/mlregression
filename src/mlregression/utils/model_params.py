@@ -16,57 +16,59 @@ from .exceptions import WrongInputException
 # Model tools
 #------------------------------------------------------------------------------
 def compose_model(estimator_name, perform_estimator_check=True, verbose=True):
-        
-        # Modules from scikit-learn used for regression
-        SCIKIT_REGRESSION_MODULES = ["dummy","ensemble","gaussian_process",
-                                     "isotonic","kernel_ridge","linear_model",
-                                     "neighbors","neural_network","svm","tree",]
-        
-        # Internal modules used for regression
-        NONSCIKIT_REGRESSION_MODULES = ["boosting",]
-        
-        REGRESSION_MODULES = [SCIKIT_REGRESSION_MODULES,NONSCIKIT_REGRESSION_MODULES]
-        
-        # Count the number of modules in which we find the model name
-        n_modules_found_in = 0
-        
-        for reg_module in REGRESSION_MODULES:
-            
-            # Check if 'estimator_name' is an attribute of any module
-            module_check = [hasattr(eval(lib), estimator_name) for lib in reg_module]
-        
-            is_found = any(module_check)
+    """
+    Instantitate model from string. Note that this uses all params from .get_params() in case we overwrite models (e.g. boosting)
+    """
+    # Modules from scikit-learn used for regression
+    SCIKIT_REGRESSION_MODULES = ["dummy","ensemble","gaussian_process",
+                                 "isotonic","kernel_ridge","linear_model",
+                                 "neighbors","neural_network","svm","tree",]
     
-            # Compose model            
-            if is_found:
-                
-                # Check counter
-                if n_modules_found_in>1:
-                    raise Exception(f"""Algorithm '{estimator_name}' is part of multiple modules, namely at least two of
-                                    \n{SCIKIT_REGRESSION_MODULES}
-                                    \n{NONSCIKIT_REGRESSION_MODULES}
-                                    """)
-                
-                # Locate module
-                module = list(compress(reg_module, module_check))[0]
+    # Internal modules used for regression
+    NONSCIKIT_REGRESSION_MODULES = ["boosting",]
+    
+    REGRESSION_MODULES = [SCIKIT_REGRESSION_MODULES,NONSCIKIT_REGRESSION_MODULES]
+    
+    # Count the number of modules in which we find the model name
+    n_modules_found_in = 0
+    
+    for reg_module in REGRESSION_MODULES:
+        
+        # Check if 'estimator_name' is an attribute of any module
+        module_check = [hasattr(eval(lib), estimator_name) for lib in reg_module]
+    
+        is_found = any(module_check)
 
-                # Instantiate model
-                estimator = eval(module+"."+estimator_name+"()")
+        # Compose model            
+        if is_found:
+            
+            # Check counter
+            if n_modules_found_in>1:
+                raise Exception(f"""Algorithm '{estimator_name}' is part of multiple modules, namely at least two of
+                                \n{SCIKIT_REGRESSION_MODULES}
+                                \n{NONSCIKIT_REGRESSION_MODULES}
+                                """)
+            
+            # Locate module
+            module = list(compress(reg_module, module_check))[0]
 
-                # Increase model counter
-                n_modules_found_in += 1
+            # Instantiate model
+            estimator = eval(module+"."+estimator_name+"()")
 
-        if n_modules_found_in==0:
-            raise Exception(f"""Algorithm '{estimator_name}' is NOT part any module, namely neither of
-                            \n{SCIKIT_REGRESSION_MODULES}
-                            \n{NONSCIKIT_REGRESSION_MODULES}
-                            """)
+            # Increase model counter
+            n_modules_found_in += 1
 
-        # Model checks
-        if perform_estimator_check:
-            check_estimator(estimator=estimator)
+    if n_modules_found_in==0:
+        raise Exception(f"""Algorithm '{estimator_name}' is NOT part any module, namely neither of
+                        \n{SCIKIT_REGRESSION_MODULES}
+                        \n{NONSCIKIT_REGRESSION_MODULES}
+                        """)
 
-        return estimator
+    # Model checks
+    if perform_estimator_check:
+        check_estimator(estimator=estimator)
+
+    return estimator
 
 #------------------------------------------------------------------------------
 # Parameter tools

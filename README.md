@@ -31,14 +31,14 @@ This code has the following dependencies:
 - daal >= 2021.3
 - daal4py >= 2021.3
 - tbb >= 2021.4
-- xgboost >=1.3
+- xgboost >=1.5
 - lightgbm >=3.2
 
 
 ## Installation
 Before calling `pip install mlregression`, we recommend using `conda` to install the dependencies. In our experience, calling the following command works like a charm:
 ```
-conda install -c conda-forge numpy">=1.19" pandas">=1.3" scikit-learn">=1" scikit-learn-intelex">=2021.3" daal">=2021.3" daal4py">=2021.3" tbb">=2021.4" xgboost">=1.3" lightgbm">=3.2" --force-reinstall
+conda install -c conda-forge numpy">=1.19" pandas">=1.3" scikit-learn">=1" scikit-learn-intelex">=2021.3" daal">=2021.3" daal4py">=2021.3" tbb">=2021.4" xgboost">=1.5" lightgbm">=3.2" --force-reinstall
 ```
 After this, install `mlregression` by calling `pip install mlregression`.
 Note that without installing the dependensies, the package will not work. As of now, it does not work when installing the dependensies via `pip install`. The reason is that we are using the Intel® Extension for Scikit-learn to massively speed up computations, but the dependensies are not properly installed via `pip install`.

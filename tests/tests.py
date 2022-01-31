@@ -47,7 +47,7 @@ max_n_models = 3
 
 # All estimators as strings
 estimator_strings = [
-    # "XGBRegressor", "LGBMegressor",
+    "XGBRegressor", "LGBMegressor",
     "DummyRegressor",
     "RandomForestRegressor","ExtraTreesRegressor", "GradientBoostingRegressor",
     "LinearRegression",
