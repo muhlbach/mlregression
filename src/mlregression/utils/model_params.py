@@ -284,7 +284,7 @@ def get_param_grid_from_estimator(estimator):
 
     elif isinstance_double(estimator, linear_model.RidgeCV):
         param_grid = {
-            'alphas':(1.0,0.001, 0.1, 10, 100, 1000, 10000),
+            'alphas':(1.0, 0.00001, 0.0001, 0.001, 0.1, 10, 100, 1000, 10000),
             'fit_intercept':True,
             'scoring':None,
             'gcv_mode':None,
@@ -315,7 +315,7 @@ def get_param_grid_from_estimator(estimator):
             'n_alphas':1000,
             'fit_intercept':True,
             'precompute':'auto',
-            'max_iter':1000,
+            'max_iter':10000,
             'tol':0.0001,
             'copy_X':True,
             'positive':False,
@@ -362,7 +362,7 @@ def get_param_grid_from_estimator(estimator):
             'n_alphas':1000,
             'fit_intercept':True,
             'precompute':'auto',
-            'max_iter':1000,
+            'max_iter':10000,
             'tol':0.0001,
             'copy_X':True,
             'positive':False,

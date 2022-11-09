@@ -17,6 +17,7 @@ X, y = make_regression(n_samples=500,
                        n_informative=5,
                        n_targets=1,
                        bias=0.0,
+                       noise=1,
                        coef=False,
                        random_state=1991)
 

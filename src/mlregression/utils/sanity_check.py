@@ -45,7 +45,7 @@ def check_param_grid(param_grid):
                     "to be a non-empty sequence.".format(name)
                 )
                 
-def check_X(X):
+def check_X(X, convert_to_nparray=True):
     
     # Convert to dataframe if not already converted
     if not isinstance(X, pd.DataFrame):
@@ -59,12 +59,13 @@ def check_X(X):
     if X.isnull().values.any():
         raise Exception("X contains missing inputs")
         
-    # Convert back to np.array
-    X = np.array(X)
+    if convert_to_nparray:
+        # Convert back to np.array
+        X = np.array(X)
         
     return X
                 
-def check_Y(Y):
+def check_Y(Y, convert_to_nparray=True):
     
     # Convert to series if not already converted
     if not isinstance(Y, pd.Series):
@@ -78,16 +79,17 @@ def check_Y(Y):
     if Y.isnull().values.any():
         raise Exception("Y contains missing inputs")        
     
-    # Convert back to np.array
-    Y = np.array(Y)    
+    if convert_to_nparray:
+        # Convert back to np.array
+        Y = np.array(Y)    
     
     return Y
         
-def check_X_Y(X, Y):
+def check_X_Y(X, Y, convert_to_nparray=True):
     
     # Perform individual checks
-    X = check_X(X)
-    Y = check_Y(Y)
+    X = check_X(X, convert_to_nparray=convert_to_nparray)
+    Y = check_Y(Y, convert_to_nparray=convert_to_nparray)
     
     # Check length
     if len(Y)!=len(X):

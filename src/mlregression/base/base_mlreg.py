@@ -2,20 +2,21 @@
 # Libraries
 #------------------------------------------------------------------------------
 # Standard
-from sklearnex import patch_sklearn
-patch_sklearn()
-from abc import ABC, abstractmethod
+try:
+    from sklearnex import patch_sklearn
+    patch_sklearn()
+except ImportError as e:
+    print(f"Trying to import 'sklearnex', we caught the following error: \n\n{str(e)}. \n\nContinuing without the sklearn-extension.")
+    
+# from abc import ABC, abstractmethod
 import numpy as np
-import pandas as pd
+import bodyguard as bg
 from sklearn.model_selection import ParameterSampler, GridSearchCV, KFold, TimeSeriesSplit
 from copy import deepcopy
 import inspect
 
 # User
-from ..utils.tools import (SingleSplit,
-                           isin,
-                           remove_conditionally_invalid_keys,
-                           unlist_dict_values, get_unique_elements_from_list)
+from ..utils.cv import SingleSplit
 from ..utils.model_params import get_param_grid_from_estimator, compose_model, update_params
 from ..utils.sanity_check import check_param_grid, check_X_Y, check_X, check_estimator
 from ..utils.exceptions import WrongInputException
@@ -131,10 +132,10 @@ class BaseMLRegressor(object):
         init_params = list(signature.parameters.keys())
                 
         # We require that all parameters are part of initialization
-        if not isin(a=list(param_grid.keys()),
-                    b=init_params,
-                    how="all",
-                    return_element_wise=False):
+        if not bg.tools.isin(a=list(param_grid.keys()),
+                             b=init_params,
+                             how="all",
+                             return_element_wise=False):
             raise Exception(f"""
                             \nSome parameters are not initialized. Check estimator!
                             \nInitial parameters: {init_params}
@@ -142,15 +143,15 @@ class BaseMLRegressor(object):
                             \nMissing parameters: {[set(param_grid.keys())-set(init_params)]}
                             """)
                             
-        # Remove invalid keys
-        param_grid = remove_conditionally_invalid_keys(d=param_grid,
-                                                        invalid_values=["deprecated"])
+        # Remove keys with invalid values
+        param_grid = bg.dicts.remove_conditionally_invalid_keys(d=param_grid,
+                                                                invalid_values=["deprecated"])
                 
         # Set param_grid values to list if not already list
-        param_grid = {k: v if isinstance(v, list) else v.tolist() if isinstance(v, np.ndarray) else [v] for k, v in param_grid.items()}
-
+        param_grid = {k: bg.lists.listify(x=v) for k, v in param_grid.items()}
+        
         # Remove duplicates
-        param_grid = {k: get_unique_elements_from_list(l=v,keep_order=True) for k,v in param_grid.items()}
+        param_grid = {k: bg.lists.unique(l=v) for k,v in param_grid.items()}
         
         # Check parameter grid
         check_param_grid(param_grid)
@@ -189,12 +190,11 @@ class BaseMLRegressor(object):
         Choose between grid search or randomized search, or simply the estimator if only one parametrization is provided.
         Note that if the estimator ends with "CV", we assume it has a native implementation as in scikit-learn. We use that in this case.
         """       
-        if type(estimator).__name__[-2:]=="CV":
+        # if type(estimator).__name__[-2:]=="CV":
+        if type(estimator).__name__.endswith("CV"):    
             # Unlist if possible
-            param_grid = unlist_dict_values(d=param_grid)
+            param_grid = bg.dicts.unlist_values(d=param_grid)
             
-            # Get first element of parameter grid
-            # param_grid = {k: param_grid.get(k,None)[0] for k in param_grid.keys()}
             # Set estimator
             estimator_cv = estimator
                         
@@ -215,14 +215,10 @@ class BaseMLRegressor(object):
             if n_models>1:            
                 
                 if n_models>max_n_models:
-                    
-                    # max_n_models=3
-                    # param_grid={"a":[0,"aaa",2,3],
-                    #             "b":["a0a","bbb",5,6]}
-                                        
+                                                
                     # Select (max_n_models-1) combinations of parameters AND add default (being the first parameter)
                     self.param_sampled = list(ParameterSampler(param_distributions=param_grid,
-                                                          n_iter=max_n_models-1))
+                                                               n_iter=max_n_models-1))
 
                     self.param_default = {k: param_grid.get(k,None)[0] for k in param_grid.keys()}                    
                     
@@ -231,9 +227,6 @@ class BaseMLRegressor(object):
                     
                     # Listify all values in dicts
                     param_grid = [{k:[v] for k,v in l.items()} for l in param_grid]
-                    
-                    # Convert to dict of lists
-                    # param_grid = pd.DataFrame(param_grid).to_dict('list')
                     
                 # Grid search over all parameters provided (sampled or not)    
                 estimator_cv = GridSearchCV(estimator=estimator,
@@ -275,7 +268,7 @@ class BaseMLRegressor(object):
 
     def predict(self,X):
         
-        # Check X and Y
+        # Check X
         X = check_X(X)
                         
         # Estimate f in Y0 = f(X) + eps
@@ -295,7 +288,7 @@ class BaseMLRegressor(object):
     def set_params(self,**params):
         self.estimator_cv.set_params(**params)
 
-    def cross_fit(self,X,y,shuffle=False):
+    def fit_predict_insample(self,X,y,shuffle=False):
         
         # Check X and Y
         X, y = check_X_Y(X, y)
@@ -303,7 +296,7 @@ class BaseMLRegressor(object):
         # Check n_cf_folds
         if self.n_cf_folds is None:
             raise Exception("""
-                            When calling 'cross_fit()', one has to intentionally provide 'n_cf_folds' in the __init__
+                            When calling 'fit_predict_insample()', one has to intentionally provide 'n_cf_folds' in the __init__
                             That is, 'n_cf_folds' is required to be an integer and not 'None'
                             """)     
 
@@ -319,7 +312,8 @@ class BaseMLRegressor(object):
             # Increase cnt
             i += 1
             
-            print(f"Cross-fitting fold {i}/{self.n_cf_folds}")
+            if self.verbose>1:
+                print(f"Cross-fitting fold {i}/{self.n_cf_folds}")
             
             # Fill indices
             self.indices_[test_index] = i

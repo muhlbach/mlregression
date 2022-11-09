@@ -15,6 +15,7 @@ This script implements some basic tests of the package that should be run before
 # Standard
 import time, random
 import numpy as np
+import pandas as pd
 from sklearn.datasets import make_regression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
@@ -82,10 +83,48 @@ X, y = make_regression(n_samples=n_obs,
                        n_informative=5,
                        n_targets=1,
                        bias=0.0,
+                       noise=1,
                        coef=False,
                        random_state=1991)
 
+# X = pd.DataFrame(X)
+# y = pd.Series(y)
+
 X_train, X_test, y_train, y_test = train_test_split(X, y)
+
+#------------------------------------------------------------------------------
+# Playground
+#------------------------------------------------------------------------------
+from mlregression.mlreg import MLRegressor
+self = mlreg = MLRegressor(estimator="TargetRandomForestRegressor",
+                           max_n_models=2,
+                           method="bic",
+                           # n_target=3,
+                           verbose=False)
+
+print(mlreg.estimator)
+print(mlreg.target_regressors)
+
+mlreg.fit(X=X_train,
+          y=y_train)
+
+mlreg.predict(X=X_test)
+
+mlreg.estimator
+
+
+
+#------------------------------------------------------------------------------
+# [Experimental] Post-Lasso
+#------------------------------------------------------------------------------
+from mlregression.targeting import PostLasso
+self = postlasso = PostLasso(n_bootstrap=1000)
+postlasso.alphas
+
+postlasso.fit(X_train,y_train)
+
+
+
 
 #------------------------------------------------------------------------------
 # [Experimental] Test estimator as object
@@ -100,6 +139,33 @@ X_train, X_test, y_train, y_test = train_test_split(X, y)
 
 # print("succes")
 # raise Exception()
+
+#------------------------------------------------------------------------------
+# Target predictors via Lasso
+#------------------------------------------------------------------------------
+from mlregression.targeting import LassoTargeter
+
+methods = ['cv_lasso', 'cv_elasticnet', 'bic', 'aic', 'lambda', 'cv', 'ic']
+method='lambda'
+
+lassotargeter = LassoTargeter(method=method, n_target=5) 
+print(f"Methods allowed: {lassotargeter.METHOD_ALLOWED}")
+
+lassotargeter.fit(X=X_train,y=y_train)
+
+X_train_targeted1 = lassotargeter.fit_transform(X=X_train, y=y_train)
+
+X_train_targeted2 = lassotargeter.transform(X=X_train)
+
+
+
+
+X_test_targeted = lassotargeter.transform(X=X_test)
+
+
+
+
+X_selected = lassotargeter.target(X=X_test)
 
 
 #------------------------------------------------------------------------------
@@ -135,7 +201,7 @@ for i,estimator in enumerate(estimator_strings):
     # Estimate CV model
     #--------------------------------------------------------------------------
     # Instantiate model
-    mlreg = MLRegressor(estimator=estimator,
+    self = mlreg = MLRegressor(estimator=estimator,
                         max_n_models=max_n_models)
 
     # Fit
