@@ -63,9 +63,7 @@ class BaseMLRegressor(object):
 
         # ---------------------------------------------------------------------
         # Estimator
-        # ---------------------------------------------------------------------
-        """This instantiates the estimator as self.estimator"""
-        
+        # ---------------------------------------------------------------------        
         # Check estimator type
         if isinstance(self.estimator, str):
             self.estimator = compose_model(estimator_name=self.estimator,
@@ -77,6 +75,10 @@ class BaseMLRegressor(object):
         # ---------------------------------------------------------------------
         # Parameters
         # ---------------------------------------------------------------------
+        print("get_params", self.estimator.get_params())
+        print("param_grid", self.param_grid)
+        
+        
         self.param_grid = self._fix_params(estimator=self.estimator,
                                            param_grid=self.param_grid)
 
@@ -120,7 +122,6 @@ class BaseMLRegressor(object):
         if param_grid is None:
             param_grid = get_param_grid_from_estimator(estimator=estimator)
                         
-        # print(f"\n\n\nparam within fnc1: {param_grid} \n\n")
         # Add default parameters if for some reason not specified by practitioner
         param_grid = update_params(old_param=estimator.get_params(),
                                    new_param=param_grid)

@@ -57,9 +57,10 @@ class MLRegressor(BaseMLRegressor):
         # Fix
         self._fix_target_estimator()
         
-        # Instantiate targeter
-        self.targeter = LassoTargeter(**kwargs)
-        
+        if self.target_regressors:
+            # Instantiate targeter
+            self.targeter = LassoTargeter(**kwargs)
+            
         super().__init__(
             estimator=self.estimator,
             param_grid=self.param_grid,
